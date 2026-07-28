@@ -1,0 +1,13 @@
+# Dependencias de Node
+node_modules/
+
+# Archivos de entorno 
+.env
+.env.local
+
+# Archivos de compilación de Vue
+frontend/dist/
+
+# Logs del sistema operativo
+.DS_Store
+Thumbs.db
