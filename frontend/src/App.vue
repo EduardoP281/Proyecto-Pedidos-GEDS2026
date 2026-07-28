@@ -18,7 +18,7 @@ onMounted(async () => {
 
 <template>
   <div class="container">
-    <h1>🎓 App PROYECTO_PEDIDOS (Vue + Node)</h1>
+    <h1>App PROYECTO_PEDIDOS (Vue + Node)</h1>
     <div class="status-box">
       <p><strong>Estado del Backend:</strong> {{ mensajeBackend }}</p>
     </div>
