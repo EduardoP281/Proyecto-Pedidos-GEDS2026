@@ -1,8 +1,8 @@
 import { Router } from 'express';
-    
-    const router = Router();
-    router.get('/test', (req, res) => {
-        res.json({ message: 'API conectada' });
-    });
-    
-    export default router;
+import authRoutes from './auth.routes.js';
+
+const router = Router();
+
+router.use('/auth', authRoutes);
+
+export default router;
