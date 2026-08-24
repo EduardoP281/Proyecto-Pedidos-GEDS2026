@@ -1,33 +1,36 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '../stores/auth';
 
-const email = ref('')
-const password = ref('')
-const rememberMe = ref(false)
-const showPassword = ref(false)
+const router = useRouter();
+const authStore = useAuthStore();
 
-const router = useRouter()
+const email = ref('');
+const password = ref('');
+const rememberMe = ref(false);
+const showPassword = ref(false);
+const errorMessage = ref('');
 
-const passwordFieldType = computed(() => showPassword.value ? 'text' : 'password')
-const passwordIcon = computed(() => showPassword.value ? 'visibility' : 'visibility_off')
+const passwordFieldType = computed(() => (showPassword.value ? 'text' : 'password'));
+const passwordIcon = computed(() => (showPassword.value ? 'visibility_off' : 'visibility'));
 
 const togglePassword = () => {
-  showPassword.value = !showPassword.value
-}
+  showPassword.value = !showPassword.value;
+};
 
-const handleLogin = () => {
-  if (!email.value || !password.value) {
-    alert('Por favor, completa todos los campos obligatorios.')
-    return
+const handleLogin = async () => {
+  errorMessage.value = '';
+  try {
+    await authStore.login({
+      email: email.value,
+      password: password.value,
+    });
+    router.push('/');
+  } catch (error) {
+    errorMessage.value = error.message;
   }
-  
-  console.log('Iniciando sesión con:', {
-    email: email.value,
-    password: password.value,
-    rememberMe: rememberMe.value
-  })
-}
+};
 </script>
 
 <template>
@@ -55,6 +58,11 @@ const handleLogin = () => {
           </p>
         </div>
 
+        <!-- Alerta de Error -->
+        <div v-if="errorMessage" class="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 text-sm rounded-xl">
+          {{ errorMessage }}
+        </div>
+
         <form @submit.prevent="handleLogin" class="space-y-6">
           <div>
             <label class="font-label-md text-label-md text-on-surface-variant block mb-2" for="email">
@@ -74,7 +82,7 @@ const handleLogin = () => {
                 placeholder="usuario@devsoft.com"
                 required
                 type="email"
-              >
+              />
             </div>
           </div>
 
@@ -96,10 +104,10 @@ const handleLogin = () => {
                 name="password"
                 placeholder="••••••••"
                 required
-              >
+              />
               <button
                 aria-label="Toggle password visibility"
-                class="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-on-surface transition-colors focus:outline-none"
+                class="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-on-surface transition-colors focus:outline-none cursor-pointer"
                 @click="togglePassword"
                 type="button"
               >
@@ -118,7 +126,7 @@ const handleLogin = () => {
                 id="remember-me"
                 name="remember-me"
                 type="checkbox"
-              >
+              />
               <label class="ml-2 block font-body-sm text-body-sm text-on-surface-variant" for="remember-me">
                 Recordarme
               </label>
@@ -132,10 +140,11 @@ const handleLogin = () => {
 
           <div class="pt-2">
             <button
-              class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm font-label-md text-label-md font-bold text-white bg-primary-container hover:bg-primary transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              :disabled="authStore.loading"
+              class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm font-label-md text-label-md font-bold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary cursor-pointer"
               type="submit"
             >
-              Iniciar Sesión
+              {{ authStore.loading ? 'Ingresando...' : 'Iniciar Sesión' }}
             </button>
           </div>
         </form>
