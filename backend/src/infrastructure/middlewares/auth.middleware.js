@@ -9,12 +9,11 @@ export const verifyToken = (req, res, next) => {
     }
 
     try {
-        const secret = process.env.JWT_SECRET || 'SEc28*';
+        const secret = process.env.JWT_SECRET || 'Sec28*';
         const decoded = jwt.verify(token, secret);
-        
         req.user = decoded;
         next();
-    } catch (error) {}
+    } catch (error) {
         return res.status(403).json({ error: 'Token inválido o expirado.' });
     }
 };
