@@ -1,56 +1,38 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '../stores/auth';
 
-const fullname = ref('')
-const email = ref('')
-const phone = ref('')
-const password = ref('')
-const confirmPassword = ref('')
+const router = useRouter();
+const authStore = useAuthStore();
 
-const router = useRouter()
+const fullname = ref('');
+const email = ref('');
+const phone = ref('');
+const password = ref('');
+const confirmPassword = ref('');
+const errorMessage = ref('');
 
 const handleRegister = async () => {
-  if (!fullname.value || !email.value || !phone.value || !password.value || !confirmPassword.value) {
-    alert('Por favor, completa todos los campos.')
-    return
-  }
+  errorMessage.value = '';
 
   if (password.value !== confirmPassword.value) {
-    alert('Las contraseñas no coinciden.')
-    return
-  }
-
-  // Derivar un username simple a partir del email (antes de @) para cumplir la columna NOT NULL
-  const username = email.value.split('@')[0] || fullname.value.replace(/\s+/g, '').toLowerCase()
-
-  const payload = {
-    full_name: fullname.value,
-    username,
-    email: email.value,
-    password: password.value,
-    phone: phone.value
+    errorMessage.value = 'Las contraseñas no coinciden';
+    return;
   }
 
   try {
-    const res = await fetch('http://localhost:3000/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-
-    const data = await res.json()
-    if (res.ok) {
-      alert(data.message || 'Registro exitoso')
-      router.push('/login')
-    } else {
-      alert(data.error || JSON.stringify(data))
-    }
-  } catch (err) {
-    console.error('Error al registrar desde frontend:', err)
-    alert('Error de red al registrar. Revisa la consola del navegador.')
+    await authStore.register({
+      nombre: fullname.value,
+      email: email.value,
+      telefono: phone.value,
+      password: password.value,
+    });
+    router.push('/login');
+  } catch (error) {
+    errorMessage.value = error.message;
   }
-}
+};
 </script>
 
 <template>
@@ -65,6 +47,11 @@ const handleRegister = async () => {
             <p class="font-body-md text-body-md text-on-surface-variant">
               Sistema de Gestión de Pedidos y Entregas
             </p>
+          </div>
+
+          <!-- Alerta de Error -->
+          <div v-if="errorMessage" class="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 text-sm rounded-xl">
+            {{ errorMessage }}
           </div>
 
           <form @submit.prevent="handleRegister" class="space-y-5">
@@ -180,10 +167,11 @@ const handleRegister = async () => {
 
             <div class="pt-2">
               <button
-                class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-[12px] shadow-sm font-label-md text-label-md text-on-primary bg-primary-container hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-container transition-colors"
+                :disabled="authStore.loading"
+                class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-[12px] shadow-sm font-label-md text-label-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors cursor-pointer"
                 type="submit"
               >
-                Registrarse
+                {{ authStore.loading ? 'Registrando...' : 'Registrarse' }}
               </button>
             </div>
           </form>
