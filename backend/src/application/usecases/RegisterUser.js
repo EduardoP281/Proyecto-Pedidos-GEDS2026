@@ -7,7 +7,6 @@ export const registerUserUseCase = async (userData) => {
     const salt = await bcrypt.genSalt(10);
     const password_hash = await bcrypt.hash(password, salt);
 
-    // Ensure there is a default role to satisfy FK constraint
     let role_id;
     const [existingRoles] = await pool.query('SELECT role_id FROM roles LIMIT 1');
     if (existingRoles && existingRoles.length > 0) {
