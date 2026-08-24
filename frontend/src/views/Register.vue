@@ -23,9 +23,10 @@ const handleRegister = async () => {
 
   try {
     await authStore.register({
-      nombre: fullname.value,
+      full_name: fullname.value,   
+      username: email.value,      
       email: email.value,
-      telefono: phone.value,
+      phone: phone.value,          
       password: password.value,
     });
     router.push('/login');
