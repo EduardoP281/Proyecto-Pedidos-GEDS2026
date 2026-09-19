@@ -1,34 +1,56 @@
-import axios from 'axios';
+const API_URL = 'http://localhost:3000/api';
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://backend-development-94b4.up.railway.app/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+export const api = {
+    // Categories
+    async getCategories() {
+        const response = await fetch(`${API_URL}/categories`);
+        return response.json();
+    },
+    async createCategory(data) {
+        const response = await fetch(`${API_URL}/categories`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        return response.json();
+    },
+    async updateCategory(id, data) {
+        const response = await fetch(`${API_URL}/categories/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        return response.json();
+    },
+    async deleteCategory(id) {
+        const response = await fetch(`${API_URL}/categories/${id}`, { method: 'DELETE' });
+        return response.json();
+    },
 
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Products
+    async getProducts(categoryId = '') {
+        const url = categoryId ? `${API_URL}/products?category_id=${categoryId}` : `${API_URL}/products`;
+        const response = await fetch(url);
+        return response.json();
+    },
+    async createProduct(data) {
+        const response = await fetch(`${API_URL}/products`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        return response.json();
+    },
+    async updateProduct(id, data) {
+        const response = await fetch(`${API_URL}/products/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        return response.json();
+    },
+    async deleteProduct(id) {
+        const response = await fetch(`${API_URL}/products/${id}`, { method: 'DELETE' });
+        return response.json();
     }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-    }
-    const message = error.response?.data?.message || error.response?.data?.error || 'Ocurrió un error inesperado';
-    return Promise.reject(new Error(message));
-  }
-);
-
-export default api;
+};
