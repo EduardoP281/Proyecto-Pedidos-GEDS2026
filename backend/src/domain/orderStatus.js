@@ -1,0 +1,25 @@
+export const ORDER_STATUS = Object.freeze({
+  CREADO: 'CREADO',
+  PAGADO: 'PAGADO',
+  EN_PREPARACION: 'EN_PREPARACION',
+  EN_CAMINO: 'EN_CAMINO',
+  ENTREGADO: 'ENTREGADO',
+  CANCELADO: 'CANCELADO',
+});
+
+export const STATUS_TRANSITIONS = Object.freeze({
+  [ORDER_STATUS.CREADO]: [ORDER_STATUS.PAGADO, ORDER_STATUS.CANCELADO],
+  [ORDER_STATUS.PAGADO]: [ORDER_STATUS.EN_PREPARACION, ORDER_STATUS.CANCELADO],
+  [ORDER_STATUS.EN_PREPARACION]: [ORDER_STATUS.EN_CAMINO, ORDER_STATUS.CANCELADO],
+  [ORDER_STATUS.EN_CAMINO]: [ORDER_STATUS.ENTREGADO, ORDER_STATUS.CANCELADO],
+  [ORDER_STATUS.ENTREGADO]: [],
+  [ORDER_STATUS.CANCELADO]: [],
+});
+
+export function isValidTransition(currentStatus, nextStatus) {
+  if (!currentStatus || !nextStatus) {
+    return false;
+  }
+
+  return STATUS_TRANSITIONS[currentStatus]?.includes(nextStatus) ?? false;
+}

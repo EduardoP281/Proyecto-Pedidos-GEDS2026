@@ -5,6 +5,10 @@ node_modules/
 .env
 .env.local
 
+# Archivos de base de datos locales y artefactos del entorno
+backend/data/
+.idea/
+
 # Archivos de compilación de Vue
 frontend/dist/
 
