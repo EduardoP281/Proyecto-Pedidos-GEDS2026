@@ -11,6 +11,8 @@
   "dependencies": {
     "vue": "^3.5.39",
     "vue-router": "^5.3.1"
+    ,"tailwindcss": "^3.4.8",
+    "autoprefixer": "^10.4.14"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.7",
