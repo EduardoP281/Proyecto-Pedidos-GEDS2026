@@ -1,10 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Catalog from '../views/Catalog.vue';
 import AdminPanel from '../views/AdminPanel.vue';
+import Login from '../views/Login.vue'; // <-- 1. Importa tu componente de Login
 
 const routes = [
   {
     path: '/',
+    name: 'Login', // <-- 2. Hacemos que la raíz sea el login (o puedes dejar el catálogo y usar /login)
+    component: Login
+  },
+  {
+    path: '/catalogo',
     name: 'Catalog',
     component: Catalog
   },
@@ -20,7 +26,7 @@ const router = createRouter({
   routes
 });
 
-// simple route guard using stored user role
+// Guardián de rutas
 router.beforeEach((to, from, next) => {
   if (to.path === '/admin') {
     try {
@@ -29,9 +35,10 @@ router.beforeEach((to, from, next) => {
         return next();
       }
     } catch (e) {
-      // proceed to redirect
+      // Ignorar error de parseo
     }
-    return next({ path: '/' });
+    // Si no es admin o no está logueado, mandarlo al login
+    return next({ path: '/' }); 
   }
   next();
 });
