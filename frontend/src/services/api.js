@@ -1,7 +1,6 @@
 const API_URL = 'http://localhost:3000/api';
 
 export const api = {
-    // Categories
     async getCategories() {
         const response = await fetch(`${API_URL}/categories`);
         return response.json();
@@ -27,7 +26,6 @@ export const api = {
         return response.json();
     },
 
-    // Products
     async getProducts(categoryId = '') {
         const url = categoryId ? `${API_URL}/products?category_id=${categoryId}` : `${API_URL}/products`;
         const response = await fetch(url);

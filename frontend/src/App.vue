@@ -619,7 +619,6 @@ const saveProduct = async () => {
       else await api.createProduct(productForm.value);
       await loadData();
     } else {
-      // Actualización local (modo offline)
       if(productForm.value.id) {
         const idx = productsState.value.findIndex(p => p.id === productForm.value.id);
         if(idx > -1) productsState.value[idx] = { ...productForm.value };

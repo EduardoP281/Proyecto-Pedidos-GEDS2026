@@ -164,7 +164,6 @@ const getCategoryName = (id) => {
   return cat ? cat.name : 'N/A';
 };
 
-// Funciones Producto
 const openProductModal = (product = null) => {
   editingProduct.value = product;
   if (product) {
@@ -199,7 +198,6 @@ const deleteProduct = async (id) => {
   }
 };
 
-// Funciones Categoría
 const openCategoryModal = (cat = null) => {
   editingCategory.value = cat;
   if (cat) {
