@@ -28,15 +28,15 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="product in products" :key="product.id">
-            <td>{{ product.id }}</td>
+          <tr v-for="product in products" :key="product.product_id">
+            <td>{{ product.product_id }}</td>
             <td>{{ product.name }}</td>
-            <td>${{ product.price }}</td>
+            <td>${{ Number(product.price).toFixed(2) }}</td>
             <td>{{ product.stock }}</td>
             <td>{{ getCategoryName(product.category_id) }}</td>
             <td>
               <button class="btn btn-sm btn-edit" @click="openProductModal(product)">Editar</button>
-              <button class="btn btn-sm btn-danger" @click="deleteProduct(product.id)">Eliminar</button>
+              <button class="btn btn-sm btn-danger" @click="deleteProduct(product.product_id)">Eliminar</button>
             </td>
           </tr>
         </tbody>
@@ -59,13 +59,13 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="cat in categories" :key="cat.id">
-            <td>{{ cat.id }}</td>
+          <tr v-for="cat in categories" :key="cat.category_id">
+            <td>{{ cat.category_id }}</td>
             <td>{{ cat.name }}</td>
             <td>{{ cat.description }}</td>
             <td>
               <button class="btn btn-sm btn-edit" @click="openCategoryModal(cat)">Editar</button>
-              <button class="btn btn-sm btn-danger" @click="deleteCategory(cat.id)">Eliminar</button>
+              <button class="btn btn-sm btn-danger" @click="deleteCategory(cat.category_id)">Eliminar</button>
             </td>
           </tr>
         </tbody>
@@ -75,7 +75,7 @@
     <!-- Modal Producto -->
     <div v-if="showProductModal" class="modal-overlay">
       <div class="modal">
-        <h3>{{ editingProduct?.id ? 'Editar Producto' : 'Nuevo Producto' }}</h3>
+        <h3>{{ editingProduct?.product_id ? 'Editar Producto' : 'Nuevo Producto' }}</h3>
         <form @submit.prevent="saveProduct">
           <div class="form-group">
             <label>Nombre:</label>
@@ -97,7 +97,7 @@
             <label>Categoría:</label>
             <select v-model="productForm.category_id" required>
               <option value="">Seleccione una</option>
-              <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+              <option v-for="cat in categories" :key="cat.category_id" :value="cat.category_id">{{ cat.name }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -115,7 +115,7 @@
     <!-- Modal Categoría -->
     <div v-if="showCategoryModal" class="modal-overlay">
       <div class="modal">
-        <h3>{{ editingCategory?.id ? 'Editar Categoría' : 'Nueva Categoría' }}</h3>
+        <h3>{{ editingCategory?.category_id ? 'Editar Categoría' : 'Nueva Categoría' }}</h3>
         <form @submit.prevent="saveCategory">
           <div class="form-group">
             <label>Nombre:</label>
@@ -137,7 +137,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { api } from '../services/api';
+import api from '../services/api';
 
 const currentTab = ref('products');
 const products = ref([]);
@@ -153,14 +153,14 @@ const categoryForm = ref({ name: '', description: '' });
 
 const loadData = async () => {
   const catRes = await api.getCategories();
-  if (catRes.success) categories.value = catRes.data;
+  if (catRes && catRes.status === 200 && catRes.data && catRes.data.success) categories.value = catRes.data.data;
   
   const prodRes = await api.getProducts();
-  if (prodRes.success) products.value = prodRes.data;
+  if (prodRes && prodRes.status === 200 && prodRes.data && prodRes.data.success) products.value = prodRes.data.data;
 };
 
 const getCategoryName = (id) => {
-  const cat = categories.value.find(c => c.id === id);
+  const cat = categories.value.find(c => c.category_id === id);
   return cat ? cat.name : 'N/A';
 };
 
@@ -179,10 +179,12 @@ const saveProduct = async () => {
   if (productForm.value.stock < 0) return alert('El stock debe ser mayor o igual a 0');
 
   try {
-    if (editingProduct.value?.id) {
-      await api.updateProduct(editingProduct.value.id, productForm.value);
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    if (editingProduct.value?.product_id) {
+      await api.updateProduct(editingProduct.value.product_id, productForm.value, headers);
     } else {
-      await api.createProduct(productForm.value);
+      await api.createProduct(productForm.value, headers);
     }
     showProductModal.value = false;
     await loadData();
@@ -193,7 +195,9 @@ const saveProduct = async () => {
 
 const deleteProduct = async (id) => {
   if (confirm('¿Está seguro de eliminar este producto?')) {
-    await api.deleteProduct(id);
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    await api.deleteProduct(id, headers);
     await loadData();
   }
 };
@@ -210,10 +214,12 @@ const openCategoryModal = (cat = null) => {
 
 const saveCategory = async () => {
   try {
-    if (editingCategory.value?.id) {
-      await api.updateCategory(editingCategory.value.id, categoryForm.value);
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    if (editingCategory.value?.category_id) {
+      await api.updateCategory(editingCategory.value.category_id, categoryForm.value, headers);
     } else {
-      await api.createCategory(categoryForm.value);
+      await api.createCategory(categoryForm.value, headers);
     }
     showCategoryModal.value = false;
     await loadData();
@@ -224,7 +230,9 @@ const saveCategory = async () => {
 
 const deleteCategory = async (id) => {
   if (confirm('¿Está seguro de eliminar esta categoría?')) {
-    await api.deleteCategory(id);
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    await api.deleteCategory(id, headers);
     await loadData();
   }
 };

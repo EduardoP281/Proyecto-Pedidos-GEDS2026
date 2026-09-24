@@ -125,7 +125,7 @@
             <div class="mt-6 pt-5 border-t border-slate-200 flex items-center justify-between gap-4 overflow-x-auto custom-scroll pb-1">
               <div class="flex items-center gap-2">
                 <button @click="activeClientCategory = 'ALL'" :class="activeClientCategory === 'ALL' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 border border-slate-200'" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap">Todos</button>
-                <button v-for="cat in categoriesState" :key="cat.id" @click="activeClientCategory = cat.id" :class="activeClientCategory === cat.id ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 border border-slate-200'" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap">
+                <button v-for="cat in categoriesState" :key="cat.category_id" @click="activeClientCategory = cat.category_id" :class="activeClientCategory === cat.category_id ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 border border-slate-200'" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap">
                   <span class="material-symbols-outlined text-xs">{{ cat.icon || 'category' }}</span> {{ cat.name }}
                 </button>
               </div>
@@ -135,7 +135,7 @@
 
           <!-- Grid Products -->
           <div v-if="clientFilteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
-            <div v-for="p in clientFilteredProducts" :key="p.id" class="bg-white rounded-xl border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden group">
+            <div v-for="p in clientFilteredProducts" :key="p.product_id" class="bg-white rounded-xl border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden group">
               <div>
                 <div class="relative aspect-[4/3] bg-slate-100 overflow-hidden border-b border-slate-100">
                   <img :src="p.image_url || 'https://via.placeholder.com/400x300.png?text=Producto'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
@@ -146,7 +146,7 @@
                   </div>
                   <div class="absolute top-2.5 right-2.5">
                     <span class="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-white/90 backdrop-blur-md border border-slate-200 text-slate-500 shadow-xs">
-                      ID-{{ p.id }}
+                      ID-{{ p.product_id }}
                     </span>
                   </div>
                 </div>
@@ -230,7 +230,7 @@
               </div>
               <select v-model="adminCatFilter" class="bg-slate-50 border border-slate-200 text-slate-700 rounded-lg px-3 py-2 text-body-sm focus:bg-white focus:border-blue-600 focus:outline-none">
                 <option value="ALL">Todas las Categorías</option>
-                <option v-for="cat in categoriesState" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+                <option v-for="cat in categoriesState" :key="cat.category_id" :value="cat.category_id">{{ cat.name }}</option>
               </select>
               <select v-model="adminStockFilter" class="bg-slate-50 border border-slate-200 text-slate-700 rounded-lg px-3 py-2 text-body-sm focus:bg-white focus:border-blue-600 focus:outline-none">
                 <option value="ALL">Todo el Inventario</option>
@@ -260,7 +260,7 @@
                   <tr v-if="adminFilteredProducts.length === 0">
                     <td colspan="5" class="py-8 text-center text-slate-400 font-body-sm">No se encontraron productos.</td>
                   </tr>
-                  <tr v-for="p in adminFilteredProducts" :key="p.id" class="hover:bg-slate-50/70 transition-colors group">
+                  <tr v-for="p in adminFilteredProducts" :key="p.product_id" class="hover:bg-slate-50/70 transition-colors group">
                     <td class="py-3 px-4">
                       <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-200">
@@ -268,7 +268,7 @@
                         </div>
                         <div>
                           <div class="font-medium text-slate-900 group-hover:text-blue-600 transition-colors">{{ p.name }}</div>
-                          <div class="text-xs text-slate-500 font-mono">ID-{{ p.id }}</div>
+                          <div class="text-xs text-slate-500 font-mono">ID-{{ p.product_id }}</div>
                         </div>
                       </div>
                     </td>
@@ -310,7 +310,7 @@
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-            <div v-for="cat in categoriesState" :key="cat.id" class="bg-white p-5 rounded-xl border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all flex flex-col justify-between space-y-4 shadow-xs">
+            <div v-for="cat in categoriesState" :key="cat.category_id" class="bg-white p-5 rounded-xl border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all flex flex-col justify-between space-y-4 shadow-xs">
               <div class="space-y-3">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-3">
@@ -358,7 +358,7 @@
               <span class="material-symbols-outlined text-lg">edit_note</span>
             </div>
             <div>
-              <h3 class="text-headline-sm font-bold text-slate-900">{{ productForm.id ? 'Editar Producto' : 'Crear Producto' }}</h3>
+              <h3 class="text-headline-sm font-bold text-slate-900">{{ productForm.product_id ? 'Editar Producto' : 'Crear Producto' }}</h3>
             </div>
           </div>
           <button @click="isProductModalOpen = false" class="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100">
@@ -380,7 +380,7 @@
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Categoría *</label>
               <select v-model="productForm.category_id" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-body-sm">
-                <option v-for="cat in categoriesState" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+                <option v-for="cat in categoriesState" :key="cat.category_id" :value="cat.category_id">{{ cat.name }}</option>
               </select>
             </div>
             <div>
@@ -410,7 +410,7 @@
     <div v-if="isCategoryModalOpen" class="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
       <div class="bg-white border border-slate-200 rounded-xl w-full max-w-lg p-6 shadow-2xl space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-slate-200">
-          <h3 class="text-headline-sm font-bold text-slate-900">{{ categoryForm.id ? 'Editar Categoría' : 'Nueva Categoría' }}</h3>
+          <h3 class="text-headline-sm font-bold text-slate-900">{{ categoryForm.category_id ? 'Editar Categoría' : 'Nueva Categoría' }}</h3>
           <button @click="isCategoryModalOpen = false" class="text-slate-400 hover:text-slate-700"><span class="material-symbols-outlined text-lg">close</span></button>
         </div>
         <form @submit.prevent="saveCategory" class="space-y-4">
@@ -467,22 +467,22 @@
             <span class="material-symbols-outlined text-4xl mb-2 opacity-50">remove_shopping_cart</span>
             <p class="text-body-sm">Tu carrito está vacío.</p>
           </div>
-          <div v-else v-for="item in cart" :key="item.id" class="flex gap-3 p-3 rounded-xl border border-slate-200 bg-white shadow-xs">
-            <img :src="item.image_url || 'https://via.placeholder.com/60x60.png?text=IMG'" class="w-16 h-16 rounded-lg object-cover border border-slate-100">
+          <div v-else v-for="item in cart" :key="item.product.product_id" class="flex gap-3 p-3 rounded-xl border border-slate-200 bg-white shadow-xs">
+            <img :src="item.product.image_url || 'https://via.placeholder.com/60x60.png?text=IMG'" class="w-16 h-16 rounded-lg object-cover border border-slate-100">
             <div class="flex-1 flex flex-col justify-between">
               <div class="flex justify-between items-start">
-                <h4 class="text-body-sm font-semibold text-slate-900 line-clamp-1">{{ item.name }}</h4>
-                <button @click="removeFromCart(item.id)" class="text-slate-400 hover:text-rose-500"><span class="material-symbols-outlined text-sm">delete</span></button>
+                <h4 class="text-body-sm font-semibold text-slate-900 line-clamp-1">{{ item.product.name }}</h4>
+                <button @click="removeFromCart(item.product.product_id)" class="text-slate-400 hover:text-rose-500"><span class="material-symbols-outlined text-sm">delete</span></button>
               </div>
               <div class="flex items-center justify-between mt-2">
-                <span class="text-body-sm font-bold text-slate-900">${{ (item.price * item.quantity).toFixed(2) }}</span>
+                <span class="text-body-sm font-bold text-slate-900">${{ (item.product.price * item.quantity).toFixed(2) }}</span>
                 <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-1 py-0.5">
                   <button @click="updateCartQuantity(item, -1)" class="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-200 rounded-md">-</button>
                   <span class="text-xs font-semibold w-4 text-center">{{ item.quantity }}</span>
-                  <button @click="updateCartQuantity(item, 1)" :disabled="item.quantity >= item.stock" :class="item.quantity >= item.stock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-200'" class="w-6 h-6 flex items-center justify-center text-slate-600 rounded-md">+</button>
+                  <button @click="updateCartQuantity(item, 1)" :disabled="item.quantity >= item.product.stock" :class="item.quantity >= item.product.stock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-200'" class="w-6 h-6 flex items-center justify-center text-slate-600 rounded-md">+</button>
                 </div>
               </div>
-              <span v-if="item.quantity >= item.stock" class="text-[10px] text-amber-600 font-medium mt-1">Máximo stock alcanzado</span>
+              <span v-if="item.quantity >= item.product.stock" class="text-[10px] text-amber-600 font-medium mt-1">Máximo stock alcanzado</span>
             </div>
           </div>
         </div>
@@ -519,7 +519,8 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { api } from './services/api';
+import api from './services/api';
+import { useCartStore } from './stores/cart';
 
 const currentView = ref('catalog');
 const activeClientCategory = ref('ALL');
@@ -537,8 +538,8 @@ const isProductModalOpen = ref(false);
 const isCategoryModalOpen = ref(false);
 const isDocsModalOpen = ref(false);
 
-const productForm = ref({ id: '', name: '', description: '', category_id: '', price: '', stock: '', image_url: '' });
-const categoryForm = ref({ id: '', name: '', description: '' });
+const productForm = ref({ product_id: '', name: '', description: '', category_id: '', price: '', stock: '', image_url: '' });
+const categoryForm = ref({ category_id: '', name: '', description: '' });
 
 const showToast = (msg, type = 'success') => {
   const id = Date.now();
@@ -547,7 +548,7 @@ const showToast = (msg, type = 'success') => {
 };
 
 const getCategoryName = (id) => {
-  const cat = categoriesState.value.find(c => c.id === id);
+  const cat = categoriesState.value.find(c => c.category_id === id);
   return cat ? cat.name : 'Desconocida';
 };
 
@@ -603,11 +604,11 @@ const statLow = computed(() => productsState.value.filter(p => p.stock > 0 && p.
 const statOut = computed(() => productsState.value.filter(p => p.stock === 0).length);
 
 const openProductModal = () => {
-  productForm.value = { id: '', name: '', description: '', category_id: categoriesState.value[0]?.id || '', price: '', stock: '', image_url: '' };
+  productForm.value = { product_id: '', name: '', description: '', category_id: categoriesState.value[0]?.category_id || '', price: '', stock: '', image_url: '' };
   isProductModalOpen.value = true;
 };
 const editProduct = (p) => {
-  productForm.value = { ...p };
+  productForm.value = { product_id: p.product_id, name: p.name, description: p.description, category_id: p.category_id, price: p.price, stock: p.stock, image_url: p.image_url };
   isProductModalOpen.value = true;
 };
 const saveProduct = async () => {
@@ -615,23 +616,23 @@ const saveProduct = async () => {
   if (productForm.value.stock < 0) return showToast('El stock no puede ser negativo', 'error');
   try {
     if (isApiOnline.value) {
-      if(productForm.value.id) await api.updateProduct(productForm.value.id, productForm.value);
+      if(productForm.value.product_id) await api.updateProduct(productForm.value.product_id, productForm.value);
       else await api.createProduct(productForm.value);
       await loadData();
     } else {
-      if(productForm.value.id) {
-        const idx = productsState.value.findIndex(p => p.id === productForm.value.id);
+      if(productForm.value.product_id) {
+        const idx = productsState.value.findIndex(p => p.product_id === productForm.value.product_id);
         if(idx > -1) productsState.value[idx] = { ...productForm.value };
       } else {
-        const newId = productsState.value.length ? Math.max(...productsState.value.map(p => p.id)) + 1 : 1;
-        productsState.value.push({ ...productForm.value, id: newId, active: true });
+        const newId = productsState.value.length ? Math.max(...productsState.value.map(p => p.product_id)) + 1 : 1;
+        productsState.value.push({ ...productForm.value, product_id: newId, active: true });
       }
     }
     isProductModalOpen.value = false;
     showToast('Producto guardado');
   } catch(e) { showToast('Error al guardar producto', 'error'); }
 };
-const cart = ref([]);
+const cartStore = useCartStore();
 const isCartOpen = ref(false);
 
 const isConfirmModalOpen = ref(false);
@@ -652,31 +653,31 @@ const openDeleteModal = async (p) => {
     `¿Estás seguro de que deseas eliminar "${p.name}"? Esta acción no se puede deshacer.`,
     async () => {
       if (isApiOnline.value) {
-        await api.deleteProduct(p.id);
+        await api.deleteProduct(p.product_id);
         await loadData();
       } else {
-        productsState.value = productsState.value.filter(x => x.id !== p.id);
+        productsState.value = productsState.value.filter(x => x.product_id !== p.product_id);
       }
       showToast('Producto eliminado');
     }
   );
 };
 
-const openCategoryModal = () => { categoryForm.value = { id: '', name: '', description: '' }; isCategoryModalOpen.value = true; };
+const openCategoryModal = () => { categoryForm.value = { category_id: '', name: '', description: '' }; isCategoryModalOpen.value = true; };
 const editCategory = (c) => { categoryForm.value = { ...c }; isCategoryModalOpen.value = true; };
 const saveCategory = async () => {
   try {
     if (isApiOnline.value) {
-      if(categoryForm.value.id) await api.updateCategory(categoryForm.value.id, categoryForm.value);
+      if(categoryForm.value.category_id) await api.updateCategory(categoryForm.value.category_id, categoryForm.value);
       else await api.createCategory(categoryForm.value);
       await loadData();
     } else {
-      if(categoryForm.value.id) {
-        const idx = categoriesState.value.findIndex(c => c.id === categoryForm.value.id);
+      if(categoryForm.value.category_id) {
+        const idx = categoriesState.value.findIndex(c => c.category_id === categoryForm.value.category_id);
         if(idx > -1) categoriesState.value[idx] = { ...categoryForm.value };
       } else {
-        const newId = categoriesState.value.length ? Math.max(...categoriesState.value.map(c => c.id)) + 1 : 1;
-        categoriesState.value.push({ ...categoryForm.value, id: newId });
+        const newId = categoriesState.value.length ? Math.max(...categoriesState.value.map(c => c.category_id)) + 1 : 1;
+        categoriesState.value.push({ ...categoryForm.value, category_id: newId });
       }
     }
     isCategoryModalOpen.value = false;
@@ -689,50 +690,59 @@ const deleteCategory = async (c) => {
     `¿Estás seguro de que deseas eliminar la categoría "${c.name}"?`,
     async () => {
       if (isApiOnline.value) {
-        await api.deleteCategory(c.id);
+        await api.deleteCategory(c.category_id);
         await loadData();
       } else {
-        categoriesState.value = categoriesState.value.filter(x => x.id !== c.id);
+        categoriesState.value = categoriesState.value.filter(x => x.category_id !== c.category_id);
       }
       showToast('Categoría eliminada');
     }
   );
 };
 
-const cartItemCount = computed(() => cart.value.reduce((acc, i) => acc + i.quantity, 0));
-const cartTotal = computed(() => cart.value.reduce((acc, i) => acc + (i.price * i.quantity), 0));
+const cartItemCount = computed(() => cartStore.itemCount);
+const cartTotal = computed(() => cartStore.subtotal);
 
 const clientAddToCart = (p) => {
-  const existing = cart.value.find(i => i.id === p.id);
-  if (existing) {
-    if (existing.quantity < p.stock) {
-      existing.quantity++;
-      showToast(`Añadida otra unidad de ${p.name}`);
-    } else {
-      showToast(`Stock máximo (${p.stock}) alcanzado para ${p.name}`, 'error');
-    }
+  const ok = cartStore.addItem(p, 1);
+  if (ok) showToast(`${p.name} añadido al carrito`);
+  else showToast(`No hay suficiente stock para ${p.name}`, 'error');
+};
+
+const updateCartQuantity = (itemOrProduct, delta) => {
+  if (itemOrProduct && itemOrProduct.product) {
+    const productId = itemOrProduct.product.product_id;
+    const newQty = Number(itemOrProduct.quantity) + Number(delta);
+    cartStore.updateQuantity(productId, newQty);
   } else {
-    cart.value.push({ ...p, quantity: 1 });
-    showToast(`${p.name} añadido al carrito`);
+    // fallback: treat first arg as productId and second as absolute qty
+    cartStore.updateQuantity(itemOrProduct, delta);
   }
 };
 
-const updateCartQuantity = (item, delta) => {
-  const newQ = item.quantity + delta;
-  if (newQ > 0 && newQ <= item.stock) {
-    item.quantity = newQ;
+const removeFromCart = (productId) => {
+  cartStore.removeItem(productId);
+};
+
+const checkout = async () => {
+  if (cartStore.items.length === 0) return;
+  try {
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const items = cartStore.items.map(i => ({ product_id: i.product.product_id, quantity: i.quantity, unit_price: i.product.price }));
+    const payload = { address_id: 1, items };
+    const res = await api.post('/orders', payload, headers);
+    if (res && res.status === 201 && res.data && res.data.success) {
+      cartStore.clear();
+      showToast('Pedido creado correctamente', 'success');
+      isCartOpen.value = false;
+    } else {
+      const msg = res && res.data && res.data.error ? res.data.error.message || res.data.error : 'Error en el pedido';
+      showToast(msg, 'error');
+    }
+  } catch (e) {
+    showToast('Error al procesar el pedido', 'error');
   }
-};
-
-const removeFromCart = (id) => {
-  cart.value = cart.value.filter(i => i.id !== id);
-};
-
-const checkout = () => {
-  if (cart.value.length === 0) return;
-  showToast('¡Pedido procesado con éxito!', 'success');
-  cart.value = [];
-  isCartOpen.value = false;
 };
 
 onMounted(() => {

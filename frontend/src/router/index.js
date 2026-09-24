@@ -20,4 +20,20 @@ const router = createRouter({
   routes
 });
 
+// simple route guard using stored user role
+router.beforeEach((to, from, next) => {
+  if (to.path === '/admin') {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user && (user.role_name === 'admin' || user.role === 'admin')) {
+        return next();
+      }
+    } catch (e) {
+      // proceed to redirect
+    }
+    return next({ path: '/' });
+  }
+  next();
+});
+
 export default router;

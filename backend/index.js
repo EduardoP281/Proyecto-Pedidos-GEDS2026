@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import apiRoutes from './src/interfaces/routes/index.js';
+import errorHandler from './src/infrastructure/middlewares/error.middleware.js';
 
 // carga de variables
 dotenv.config();
@@ -16,6 +17,9 @@ app.get('/api/test', (req, res) => {
 });
 
 app.use('/api', apiRoutes);
+
+// global error handler (envelope pattern)
+app.use(errorHandler);
 
 // configuración del puerto para local y railway
 const PORT = process.env.PORT || 3000;

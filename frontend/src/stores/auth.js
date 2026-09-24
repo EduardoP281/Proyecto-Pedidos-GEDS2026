@@ -17,14 +17,15 @@ export const useAuthStore = defineStore('auth', {
       this.error = null;
       try {
         const response = await api.post('/auth/login', credentials);
-        const { token, user } = response.data;
+        const payload = response.data && response.data.data ? response.data.data : response.data;
+        const { token, user } = payload;
 
         this.token = token;
         this.user = user;
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
 
-        return response.data;
+        return payload;
       } catch (err) {
         this.error = err.message;
         throw err;
@@ -38,7 +39,8 @@ export const useAuthStore = defineStore('auth', {
       this.error = null;
       try {
         const response = await api.post('/auth/register', userData);
-        return response.data;
+        const payload = response.data && response.data.data ? response.data.data : response.data;
+        return payload;
       } catch (err) {
         this.error = err.message;
         throw err;
