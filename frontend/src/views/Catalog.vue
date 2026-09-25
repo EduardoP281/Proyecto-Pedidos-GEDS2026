@@ -25,7 +25,13 @@
         <p class="stock" :class="{ 'out-of-stock': product.stock === 0 }">
           Stock: {{ product.stock }}
         </p>
-        <button class="btn btn-primary" :disabled="product.stock === 0">Agregar al carrito</button>
+        <button 
+          class="btn btn-primary" 
+          :disabled="product.stock === 0"
+          @click="agregarAlCarrito(product)"
+        >
+          {{ product.stock === 0 ? 'Sin stock' : 'Agregar al carrito' }}
+        </button>
       </div>
     </div>
     <div v-else>
@@ -37,6 +43,9 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { api } from '../services/api';
+import { useCartStore } from '../stores/cart';
+
+const cartStore = useCartStore();
 
 const products = ref([]);
 const categories = ref([]);
@@ -52,6 +61,15 @@ const loadData = async () => {
 const fetchProducts = async () => {
   const prodRes = await api.getProducts(selectedCategory.value);
   if (prodRes.success) products.value = prodRes.data;
+};
+
+const agregarAlCarrito = (product) => {
+  cartStore.addItem({
+    id: product.id,
+    nombre: product.name,
+    precio: product.price,
+    stock: product.stock,
+  });
 };
 
 onMounted(() => {
