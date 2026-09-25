@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+import axios from 'axios';
+
 const api = axios.create({
   baseURL: 'http://localhost:3000/api',
   headers: {
@@ -35,7 +37,6 @@ api.interceptors.response.use(
     return Promise.reject(new Error(message));
   }
 );
-
 
 export const apiMethods = {
   async getCategories() {

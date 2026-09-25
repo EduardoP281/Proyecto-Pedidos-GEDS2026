@@ -2,75 +2,57 @@ import { defineStore } from 'pinia';
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
-    items: JSON.parse(localStorage.getItem('cart_items')) || [],
+export const useCartStore = defineStore('cart', {
+  state: () => ({
+    items: JSON.parse(localStorage.getItem('cart_items') || '[]')
   }),
-
   getters: {
-    // Subtotal neto (sin IVA)
-    subtotalSinIva: (state) => {
-      return state.items.reduce((acc, item) => acc + (item.precioSinIva * item.cantidad), 0);
-    },
-    // Monto correspondiente al 13% de IVA exigido por RF-04
-    montoIva: (state) => {
-      return state.subtotalSinIva * 0.13;
-    },
-    // Total a pagar con IVA
-    totalConIva: (state) => {
-      return state.subtotalSinIva + state.montoIva;
-    },
-    // Cantidad total de artículos
-    totalItemsCount: (state) => {
-      return state.items.reduce((acc, item) => acc + item.cantidad, 0);
-    },
+    itemCount: (state) => state.items.reduce((s, it) => s + it.quantity, 0),
+    subtotal: (state) => state.items.reduce((s, it) => s + it.product.price * it.quantity, 0),
+    tax: (state) => Number((state.items.reduce((s, it) => s + it.product.price * it.quantity, 0) * 0.13).toFixed(2)),
+    total: (state) => Number((state.items.reduce((s, it) => s + it.product.price * it.quantity, 0) * 1.13).toFixed(2)),
+    itemsWithPriceWithVAT: (state) => state.items.map(it => ({
+      ...it,
+      priceWithVAT: Number((it.product.price * 1.13).toFixed(2)),
+      priceWithoutVAT: Number(it.product.price.toFixed(2))
+    }))
   },
-
   actions: {
-    syncStorage() {
+    persist() {
       localStorage.setItem('cart_items', JSON.stringify(this.items));
     },
-
-    addItem(product) {
-      const existing = this.items.find((i) => i.id === product.id);
-      const precioBase = Number(product.precio);
-
+    addItem(product, quantity = 1) {
+      if (!product) return false;
+      const existing = this.items.find(i => i.product.product_id === product.product_id);
+      const qtyToAdd = Number(quantity) || 1;
       if (existing) {
-        if (existing.cantidad < product.stock) {
-          existing.cantidad += 1;
-        }
+        const newQty = existing.quantity + qtyToAdd;
+        if (newQty > product.stock) return false;
+        existing.quantity = newQty;
       } else {
-        this.items.push({
-          id: product.id,
-          nombre: product.nombre,
-          precioSinIva: precioBase,
-          precioConIva: Number((precioBase * 1.13).toFixed(2)),
-          cantidad: 1,
-          stock: product.stock,
-        });
+        if (qtyToAdd > product.stock) return false;
+        this.items.push({ product, quantity: qtyToAdd });
       }
-      this.syncStorage();
+      this.persist();
+      return true;
     },
-
-    updateQuantity(productId, cantidad) {
-      const item = this.items.find((i) => i.id === productId);
-      if (item) {
-        const qty = Number(cantidad);
-        if (qty <= 0) {
-          this.removeItem(productId);
-        } else if (qty <= item.stock) {
-          item.cantidad = qty;
-          this.syncStorage();
-        }
-      }
-    },
-
     removeItem(productId) {
-      this.items = this.items.filter((i) => i.id !== productId);
-      this.syncStorage();
+      this.items = this.items.filter(i => i.product.product_id !== productId);
+      this.persist();
     },
-
-    clearCart() {
+    updateQuantity(productId, quantity) {
+      const item = this.items.find(i => i.product.product_id === productId);
+      if (!item) return false;
+      const q = Number(quantity);
+      if (!Number.isInteger(q) || q < 1) return false;
+      if (q > item.product.stock) return false;
+      item.quantity = q;
+      this.persist();
+      return true;
+    },
+    clear() {
       this.items = [];
-      localStorage.removeItem('cart_items');
-    },
-  },
+      this.persist();
+    }
+  }
 });
