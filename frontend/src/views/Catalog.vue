@@ -26,7 +26,7 @@
         <p class="stock" :class="{ 'out-of-stock': product.stock === 0 }">
           Stock: {{ product.stock }}
         </p>
-        <button class="btn btn-primary" :disabled="product.stock === 0" @click="addToCart(product)">Agregar al carrito</button>
+<button class="btn btn-primary" :disabled="product.stock === 0" @click="addToCart(product)">Agregar al carrito</button>
       </div>
     </div>
     <div v-else>
@@ -39,6 +39,9 @@
 import { ref, onMounted } from 'vue';
 import api from '../services/api';
 import { useCartStore } from '../stores/cart';
+
+const cart = useCartStore();
+const products = ref([]);
 
 const cart = useCartStore();
 const products = ref([]);
@@ -70,7 +73,6 @@ const addToCart = (product) => {
 };
 
 const priceWithVAT = (p) => Number((p * 1.13).toFixed(2));
-
 onMounted(() => {
   loadData();
 });
