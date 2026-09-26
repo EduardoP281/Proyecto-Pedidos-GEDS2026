@@ -10,6 +10,7 @@ export const useAuthStore = defineStore('auth', {
   }),
   getters: {
     isAuthenticated: (state) => !!state.token,
+    userRole: (state) => state.user?.role_id || null,
   },
   actions: {
     async login(credentials) {
@@ -17,14 +18,21 @@ export const useAuthStore = defineStore('auth', {
       this.error = null;
       try {
         const response = await api.post('/auth/login', credentials);
-        const { token, user } = response.data;
+const payload = response.data && response.data.data ? response.data.data : response.data;
+const { token, user } = payload;
+
+this.token = token;
+this.user = user;
+this.error = null;
 
         this.token = token;
         this.user = user;
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
 
-        return response.data;
+localStorage.setItem('token', token);
+localStorage.setItem('user', JSON.stringify(user));
+return payload;
       } catch (err) {
         this.error = err.message;
         throw err;
@@ -38,7 +46,8 @@ export const useAuthStore = defineStore('auth', {
       this.error = null;
       try {
         const response = await api.post('/auth/register', userData);
-        return response.data;
+const payload = response.data && response.data.data ? response.data.data : response.data;
+return payload;
       } catch (err) {
         this.error = err.message;
         throw err;
@@ -52,6 +61,7 @@ export const useAuthStore = defineStore('auth', {
       this.user = null;
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      window.location.href = '/login';
     },
   },
 });
