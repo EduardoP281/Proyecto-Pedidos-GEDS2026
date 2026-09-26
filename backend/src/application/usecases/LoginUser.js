@@ -5,8 +5,14 @@ import pool from '../../infrastructure/database/db.js';
 export const loginUserUseCase = async (userData) => {
     const { email, password } = userData;
 
-    const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
-    
+    const [users] = await pool.query(
+        `SELECT u.*, r.name as role_name
+         FROM users u
+         LEFT JOIN roles r ON u.role_id = r.role_id
+         WHERE u.email = ?`,
+        [email]
+    );
+
     if (users.length === 0) {
         throw new Error('Credenciales incorrectas');
     }
@@ -24,20 +30,21 @@ export const loginUserUseCase = async (userData) => {
     const userId = user.user_id || user.id;
 
     const token = jwt.sign(
-        { id: userId, email: user.email, role_id: user.role_id }, 
-        secret, 
+        { user_id: userId, email: user.email, role_id: user.role_id, role_name: user.role_name },
+        secret,
         { expiresIn: '24h' }
     );
 
     return {
         token,
         user: {
-            id: userId,
+            user_id: userId,
             full_name: user.full_name,
             email: user.email,
             username: user.username,
             phone: user.phone,
-            role_id: user.role_id
+            role_id: user.role_id,
+            role_name: user.role_name || null
         }
     };
 };
