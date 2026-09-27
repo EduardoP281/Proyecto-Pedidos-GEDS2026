@@ -80,12 +80,16 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token');
 
+  if (to.path === '/' && token) {
+    return next({ name: 'Catalog' });
+  }
+
   if (to.meta.requiresAuth && !token) {
     return next({ name: 'Login' });
   }
 
   if (to.meta.guestOnly && token) {
-    return next({ name: 'CatalogHome' });
+    return next({ name: 'Catalog' });
   }
 
   next();

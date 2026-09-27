@@ -67,43 +67,43 @@ api.interceptors.response.use(
 
 api.getCategories = async () => {
   const res = await api.get('/categories');
-  return res.data;
+  return res;
 };
 
 api.createCategory = async (data) => {
   const res = await api.post('/categories', data);
-  return res.data;
+  return res;
 };
 
 api.updateCategory = async (id, data) => {
   const res = await api.put(`/categories/${id}`, data);
-  return res.data;
+  return res;
 };
 
 api.deleteCategory = async (id) => {
   const res = await api.delete(`/categories/${id}`);
-  return res.data;
+  return res;
 };
 
 api.getProducts = async (categoryId = '') => {
   const url = categoryId ? `/products?category_id=${categoryId}` : '/products';
   const res = await api.get(url);
-  return res.data;
+  return res;
 };
 
 api.createProduct = async (data) => {
   const res = await api.post('/products', data);
-  return res.data;
+  return res;
 };
 
 api.updateProduct = async (id, data) => {
   const res = await api.put(`/products/${id}`, data);
-  return res.data;
+  return res;
 };
 
 api.deleteProduct = async (id) => {
   const res = await api.delete(`/products/${id}`);
-  return res.data;
+  return res;
 };
 
 export const apiMethods = api;
