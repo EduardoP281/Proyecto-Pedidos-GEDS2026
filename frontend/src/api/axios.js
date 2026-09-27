@@ -2,9 +2,29 @@ import axios from 'axios';
 
 const DEFAULT_API_URL = 'https://backend-development-8ce5.up.railway.app/api';
 
+const normalizeApiBaseUrl = (value) => {
+  if (!value) return '';
+
+  let normalized = value.trim();
+
+  if (normalized.startsWith('[') && normalized.includes('](')) {
+    normalized = normalized.slice(1, normalized.indexOf(']('));
+  } else if (normalized.startsWith('[') && normalized.endsWith(']')) {
+    normalized = normalized.slice(1, -1);
+  }
+
+  if (normalized.startsWith('(') && normalized.endsWith(')')) {
+    normalized = normalized.slice(1, -1);
+  }
+
+  return normalized.replace(/\/+$/, '');
+};
+
 const getApiBaseUrl = () => {
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
+  const envUrl = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
+
+  if (envUrl) {
+    return envUrl;
   }
 
   return DEFAULT_API_URL;
