@@ -2,9 +2,11 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCartStore } from '../stores/cart';
+import { useAuthStore } from '../stores/auth';
 import { ordersService } from '../services/orders';
 
 const cart = useCartStore();
+const authStore = useAuthStore();
 const router = useRouter();
 
 const loading = ref(false);
@@ -22,23 +24,22 @@ const procesarPedido = async () => {
   loading.value = true;
 
   const payload = {
+    customer_id: authStore.user?.user_id ?? null,
     direccionEntrega: form.value.direccion,
     telefonoContacto: form.value.telefono,
     metodoPago: form.value.metodoPago,
-    subtotal: Number(cart.subtotalSinIva.toFixed(2)),
-    impuestos: Number(cart.montoIva.toFixed(2)),
-    total: Number(cart.totalConIva.toFixed(2)),
-    items: cart.items.map((i) => ({
-      productoId: i.id,
-      cantidad: i.cantidad,
-      precioUnitario: i.precioSinIva,
+    notes: `Entrega: ${form.value.direccion} | Tel: ${form.value.telefono}`,
+    items: cart.items.map((item) => ({
+      product_id: item.product.product_id,
+      quantity: item.quantity,
+      unit_price: Number(item.product.price || 0),
     })),
   };
 
   try {
     const res = await ordersService.createOrder(payload);
-    const orderId = res.data?.id || res.data?.ordenId || 'OK';
-    cart.clearCart();
+    const orderId = res.data?.id || res.data?.order_id || res.data?.data?.id || res.data?.data?.order_id || 'OK';
+    cart.clear();
     router.push({ name: 'OrderConfirmation', query: { orderId } });
   } catch (error) {
     errorMessage.value = error.message || 'Error al procesar el pedido transaccional.';
@@ -59,10 +60,10 @@ const procesarPedido = async () => {
     <form @submit.prevent="procesarPedido" class="space-y-5">
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Dirección de Entrega</label>
-        <textarea 
-          v-model="form.direccion" 
-          required 
-          rows="3" 
+        <textarea
+          v-model="form.direccion"
+          required
+          rows="3"
           placeholder="Calle, avenida, colonia, número de casa..."
           class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none"
         ></textarea>
@@ -70,10 +71,10 @@ const procesarPedido = async () => {
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono de Contacto</label>
-        <input 
-          v-model="form.telefono" 
-          type="tel" 
-          required 
+        <input
+          v-model="form.telefono"
+          type="tel"
+          required
           placeholder="7000-0000"
           class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none"
         />
@@ -81,8 +82,8 @@ const procesarPedido = async () => {
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Método de Pago</label>
-        <select 
-          v-model="form.metodoPago" 
+        <select
+          v-model="form.metodoPago"
           class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:outline-none"
         >
           <option value="EFECTIVO">Efectivo contra entrega</option>
@@ -98,9 +99,9 @@ const procesarPedido = async () => {
         </div>
       </div>
 
-      <button 
-        type="submit" 
-        :disabled="loading || cart.items.length === 0" 
+      <button
+        type="submit"
+        :disabled="loading || cart.items.length === 0"
         class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-lg transition duration-200 disabled:opacity-50 cursor-pointer shadow"
       >
         {{ loading ? 'Procesando transacción ACID...' : 'Confirmar Pedido' }}

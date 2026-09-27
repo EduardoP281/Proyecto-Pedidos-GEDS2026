@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -31,17 +31,17 @@ jobs:
           cd frontend
           npm ci
 
+      - name: Backend lint
+        run: |
+          cd backend
+          npm run lint
+
       - name: Build frontend
         run: |
           cd frontend
           npm run build
 
-      - name: Backend quick check
-        run: |
-          # simple sanity check for backend node files (prints ok)
-          node -e "console.log('backend ok')"
-
-      - name: Upload build artifacts (optional)
+      - name: Upload build artifacts
         if: success()
         uses: actions/upload-artifact@v4
         with:

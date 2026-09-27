@@ -16,13 +16,22 @@ export const useCartStore = defineStore('cart', {
   getters: {
     itemCount: (state) => state.items.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
     totalItemsCount: (state) => state.items.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
-    subtotal: (state) => state.items.reduce((sum, item) => sum + Number(item.product.price || 0) * Number(item.quantity || 0), 0),
-    tax: (state) => Number((state.items.reduce((sum, item) => sum + Number(item.product.price || 0) * Number(item.quantity || 0), 0) * 0.13).toFixed(2)),
-    total: (state) => Number((state.items.reduce((sum, item) => sum + Number(item.product.price || 0) * Number(item.quantity || 0), 0) * 1.13).toFixed(2)),
+    subtotalSinIva: (state) => state.items.reduce(
+      (sum, item) => sum + Number(item.product?.price || 0) * Number(item.quantity || 0),
+      0
+    ),
+    montoIva: (state) => Number((state.items.reduce(
+      (sum, item) => sum + Number(item.product?.price || 0) * Number(item.quantity || 0),
+      0
+    ) * 0.13).toFixed(2)),
+    totalConIva: (state) => Number((state.subtotalSinIva * 1.13).toFixed(2)),
+    subtotal: (state) => state.subtotalSinIva,
+    tax: (state) => state.montoIva,
+    total: (state) => state.totalConIva,
     itemsWithPriceWithVAT: (state) => state.items.map((item) => ({
       ...item,
-      priceWithVAT: Number((Number(item.product.price || 0) * 1.13).toFixed(2)),
-      priceWithoutVAT: Number(Number(item.product.price || 0).toFixed(2)),
+      priceWithVAT: Number((Number(item.product?.price || 0) * 1.13).toFixed(2)),
+      priceWithoutVAT: Number(Number(item.product?.price || 0).toFixed(2)),
     })),
   },
   actions: {

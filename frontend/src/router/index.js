@@ -1,26 +1,73 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
+import Catalog from '../views/Catalog.vue';
 
 const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('../views/Login.vue'),
+    component: Login,
     meta: { guestOnly: true },
   },
   {
     path: '/register',
     name: 'Register',
-    component: () => import('../views/Register.vue'),
+    component: Register,
     meta: { guestOnly: true },
   },
-
-  // RF-04: Carrito de compras con IVA 13%
   {
     path: '/',
+    name: 'CatalogHome',
+    component: Catalog,
+    meta: { requiresAuth: false },
+  },
+  {
+    path: '/catalog',
+    name: 'Catalog',
+    component: Catalog,
+    meta: { requiresAuth: false },
+  },
+  {
+    path: '/cart',
+    name: 'Cart',
+    component: () => import('../views/CartView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/checkout',
+    name: 'Checkout',
+    component: () => import('../views/CheckoutView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/orders',
+    name: 'Orders',
+    component: () => import('../views/OrderList.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/admin',
+    name: 'AdminPanel',
+    component: () => import('../views/AdminPanel.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/admin/orders',
+    name: 'OrderMonitoring',
+    component: () => import('../views/OrderMonitoring.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/order-confirmation',
+    name: 'OrderConfirmation',
+    component: () => import('../views/OrderConfirmation.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/home',
     name: 'Home',
-    component: () => import('../views/Home.vue'), 
+    component: () => import('../views/Home.vue'),
     meta: { requiresAuth: true },
   },
 ];
@@ -38,7 +85,7 @@ router.beforeEach((to, from, next) => {
   }
 
   if (to.meta.guestOnly && token) {
-    return next({ name: 'Home' });
+    return next({ name: 'CatalogHome' });
   }
 
   next();

@@ -30,7 +30,6 @@ const irAlCheckout = () => {
     </div>
 
     <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Tabla de productos -->
       <div class="lg:col-span-2 bg-white rounded-xl shadow border overflow-x-auto">
         <table class="w-full text-left text-sm text-gray-600">
           <thead class="bg-gray-50 text-gray-700 uppercase font-semibold text-xs border-b">
@@ -44,28 +43,28 @@ const irAlCheckout = () => {
             </tr>
           </thead>
           <tbody class="divide-y">
-            <tr v-for="item in cart.items" :key="item.id">
-              <td class="p-4 font-semibold text-gray-900">{{ item.nombre }}</td>
+            <tr v-for="item in cart.items" :key="item.product.product_id">
+              <td class="p-4 font-semibold text-gray-900">{{ item.product.name }}</td>
               <td class="p-4 text-center">
                 <div class="inline-flex items-center border rounded-lg bg-gray-50">
-                  <button 
-                    @click="cart.updateQuantity(item.id, item.cantidad - 1)" 
+                  <button
+                    @click="cart.updateQuantity(item.product.product_id, item.quantity - 1)"
                     class="px-3 py-1 text-gray-600 hover:bg-gray-200 rounded-l cursor-pointer"
                   >-</button>
-                  <span class="px-3 py-1 font-bold text-gray-800">{{ item.cantidad }}</span>
-                  <button 
-                    @click="cart.updateQuantity(item.id, item.cantidad + 1)" 
+                  <span class="px-3 py-1 font-bold text-gray-800">{{ item.quantity }}</span>
+                  <button
+                    @click="cart.updateQuantity(item.product.product_id, item.quantity + 1)"
                     class="px-3 py-1 text-gray-600 hover:bg-gray-200 rounded-r cursor-pointer"
                   >+</button>
                 </div>
               </td>
-              <td class="p-4 text-right">${{ Number(item.precioSinIva).toFixed(2) }}</td>
-              <td class="p-4 text-right text-blue-600 font-medium">${{ Number(item.precioConIva).toFixed(2) }}</td>
+              <td class="p-4 text-right">${{ Number(item.product.price || 0).toFixed(2) }}</td>
+              <td class="p-4 text-right text-blue-600 font-medium">${{ Number((Number(item.product.price || 0) * 1.13).toFixed(2)) }}</td>
               <td class="p-4 text-right font-bold text-gray-900">
-                ${{ (item.precioSinIva * item.cantidad).toFixed(2) }}
+                ${{ (Number(item.product.price || 0) * item.quantity).toFixed(2) }}
               </td>
               <td class="p-4 text-center">
-                <button @click="cart.removeItem(item.id)" class="text-red-500 hover:text-red-700 cursor-pointer">
+                <button @click="cart.removeItem(item.product.product_id)" class="text-red-500 hover:text-red-700 cursor-pointer">
                   Eliminar
                 </button>
               </td>
@@ -74,7 +73,6 @@ const irAlCheckout = () => {
         </table>
       </div>
 
-      <!-- Resumen Económico -->
       <div class="bg-white p-6 rounded-xl shadow border h-fit space-y-4">
         <h2 class="text-xl font-bold text-gray-800 border-b pb-3">Resumen de la Orden</h2>
         <div class="flex justify-between text-gray-600">
@@ -89,7 +87,7 @@ const irAlCheckout = () => {
           <span>Total a Pagar:</span>
           <span class="text-green-600">${{ cart.totalConIva.toFixed(2) }}</span>
         </div>
-        <button 
+        <button
           @click="irAlCheckout"
           class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition cursor-pointer shadow"
         >
