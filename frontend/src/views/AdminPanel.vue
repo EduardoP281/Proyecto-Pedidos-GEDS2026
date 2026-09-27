@@ -1,140 +1,3 @@
-<template>
-  <div class="admin-panel">
-    <header>
-      <h1>Panel Administrativo</h1>
-      <router-link to="/" class="btn">Ver Catálogo</router-link>
-    </header>
-
-    <div class="tabs">
-      <button :class="{ active: currentTab === 'products' }" @click="currentTab = 'products'">Productos</button>
-      <button :class="{ active: currentTab === 'categories' }" @click="currentTab = 'categories'">Categorías</button>
-    </div>
-
-    <div v-if="currentTab === 'products'">
-      <div class="header-action">
-        <h2>Gestión de Productos</h2>
-        <button class="btn btn-success" @click="openProductModal()">Nuevo Producto</button>
-      </div>
-
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Precio</th>
-            <th>Stock</th>
-            <th>Categoría</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="product in products" :key="product.product_id">
-            <td>{{ product.product_id }}</td>
-            <td>{{ product.name }}</td>
-            <td>${{ Number(product.price).toFixed(2) }}</td>
-            <td>{{ product.stock }}</td>
-            <td>{{ getCategoryName(product.category_id) }}</td>
-            <td>
-              <button class="btn btn-sm btn-edit" @click="openProductModal(product)">Editar</button>
-              <button class="btn btn-sm btn-danger" @click="deleteProduct(product.product_id)">Eliminar</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div v-if="currentTab === 'categories'">
-      <div class="header-action">
-        <h2>Gestión de Categorías</h2>
-        <button class="btn btn-success" @click="openCategoryModal()">Nueva Categoría</button>
-      </div>
-
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="cat in categories" :key="cat.category_id">
-            <td>{{ cat.category_id }}</td>
-            <td>{{ cat.name }}</td>
-            <td>{{ cat.description }}</td>
-            <td>
-              <button class="btn btn-sm btn-edit" @click="openCategoryModal(cat)">Editar</button>
-              <button class="btn btn-sm btn-danger" @click="deleteCategory(cat.category_id)">Eliminar</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Modal Producto -->
-    <div v-if="showProductModal" class="modal-overlay">
-      <div class="modal">
-        <h3>{{ editingProduct?.product_id ? 'Editar Producto' : 'Nuevo Producto' }}</h3>
-        <form @submit.prevent="saveProduct">
-          <div class="form-group">
-            <label>Nombre:</label>
-            <input v-model="productForm.name" required />
-          </div>
-          <div class="form-group">
-            <label>Descripción:</label>
-            <textarea v-model="productForm.description"></textarea>
-          </div>
-          <div class="form-group">
-            <label>Precio:</label>
-            <input type="number" step="0.01" v-model="productForm.price" required min="0.01" />
-          </div>
-          <div class="form-group">
-            <label>Stock:</label>
-            <input type="number" v-model="productForm.stock" required min="0" />
-          </div>
-          <div class="form-group">
-            <label>Categoría:</label>
-            <select v-model="productForm.category_id" required>
-              <option value="">Seleccione una</option>
-              <option v-for="cat in categories" :key="cat.category_id" :value="cat.category_id">{{ cat.name }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>URL Imagen:</label>
-            <input v-model="productForm.image_url" />
-          </div>
-          <div class="modal-actions">
-            <button type="button" class="btn" @click="showProductModal = false">Cancelar</button>
-            <button type="submit" class="btn btn-success">Guardar</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Modal Categoría -->
-    <div v-if="showCategoryModal" class="modal-overlay">
-      <div class="modal">
-        <h3>{{ editingCategory?.category_id ? 'Editar Categoría' : 'Nueva Categoría' }}</h3>
-        <form @submit.prevent="saveCategory">
-          <div class="form-group">
-            <label>Nombre:</label>
-            <input v-model="categoryForm.name" required />
-          </div>
-          <div class="form-group">
-            <label>Descripción:</label>
-            <textarea v-model="categoryForm.description"></textarea>
-          </div>
-          <div class="modal-actions">
-            <button type="button" class="btn" @click="showCategoryModal = false">Cancelar</button>
-            <button type="submit" class="btn btn-success">Guardar</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted } from 'vue';
 import api from '../services/api';
@@ -154,13 +17,13 @@ const categoryForm = ref({ name: '', description: '' });
 const loadData = async () => {
   const catRes = await api.getCategories();
   if (catRes && catRes.status === 200 && catRes.data && catRes.data.success) categories.value = catRes.data.data;
-  
+
   const prodRes = await api.getProducts();
   if (prodRes && prodRes.status === 200 && prodRes.data && prodRes.data.success) products.value = prodRes.data.data;
 };
 
 const getCategoryName = (id) => {
-  const cat = categories.value.find(c => c.category_id === id);
+  const cat = categories.value.find((c) => c.category_id === id);
   return cat ? cat.name : 'N/A';
 };
 
@@ -179,25 +42,21 @@ const saveProduct = async () => {
   if (productForm.value.stock < 0) return alert('El stock debe ser mayor o igual a 0');
 
   try {
-    const token = localStorage.getItem('token');
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
     if (editingProduct.value?.product_id) {
-      await api.updateProduct(editingProduct.value.product_id, productForm.value, headers);
+      await api.updateProduct(editingProduct.value.product_id, productForm.value);
     } else {
-      await api.createProduct(productForm.value, headers);
+      await api.createProduct(productForm.value);
     }
     showProductModal.value = false;
     await loadData();
   } catch (error) {
-    alert('Error al guardar el producto');
+    alert(error.message || 'Error al guardar el producto');
   }
 };
 
 const deleteProduct = async (id) => {
   if (confirm('¿Está seguro de eliminar este producto?')) {
-    const token = localStorage.getItem('token');
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    await api.deleteProduct(id, headers);
+    await api.deleteProduct(id);
     await loadData();
   }
 };
@@ -214,25 +73,21 @@ const openCategoryModal = (cat = null) => {
 
 const saveCategory = async () => {
   try {
-    const token = localStorage.getItem('token');
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
     if (editingCategory.value?.category_id) {
-      await api.updateCategory(editingCategory.value.category_id, categoryForm.value, headers);
+      await api.updateCategory(editingCategory.value.category_id, categoryForm.value);
     } else {
-      await api.createCategory(categoryForm.value, headers);
+      await api.createCategory(categoryForm.value);
     }
     showCategoryModal.value = false;
     await loadData();
   } catch (error) {
-    alert('Error al guardar la categoría');
+    alert(error.message || 'Error al guardar la categoría');
   }
 };
 
 const deleteCategory = async (id) => {
   if (confirm('¿Está seguro de eliminar esta categoría?')) {
-    const token = localStorage.getItem('token');
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    await api.deleteCategory(id, headers);
+    await api.deleteCategory(id);
     await loadData();
   }
 };
@@ -242,103 +97,158 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
-.admin-panel {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-.tabs {
-  margin-bottom: 20px;
-  border-bottom: 1px solid #ddd;
-}
-.tabs button {
-  padding: 10px 20px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: 1.1em;
-}
-.tabs button.active {
-  border-bottom: 2px solid #3498db;
-  color: #3498db;
-  font-weight: bold;
-}
-.header-action {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.data-table th, .data-table td {
-  border: 1px solid #ddd;
-  padding: 12px;
-  text-align: left;
-}
-.data-table th {
-  background-color: #f4f4f4;
-}
-.btn {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  text-decoration: none;
-  color: white;
-  background: #7f8c8d;
-}
-.btn-success { background: #2ecc71; }
-.btn-primary { background: #3498db; }
-.btn-danger { background: #e74c3c; }
-.btn-edit { background: #f39c12; margin-right: 5px; }
-.btn-sm { padding: 5px 8px; font-size: 0.9em; }
+<template>
+  <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+    <div class="mb-6 flex items-center justify-between gap-3">
+      <div>
+        <h2 class="text-3xl font-bold text-slate-800">Panel de Administración</h2>
+        <p class="mt-1 text-sm text-slate-500">Gestión del catálogo, inventario y ordenes del negocio.</p>
+      </div>
+      <button @click="currentTab = 'products'; openProductModal()" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">+ Crear Producto</button>
+    </div>
 
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-.modal {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 100%;
-  max-width: 500px;
-}
-.form-group {
-  margin-bottom: 15px;
-}
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-.form-group input, .form-group textarea, .form-group select {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
+    <div class="mb-6 flex gap-2 border-b border-slate-200 pb-2">
+      <button @click="currentTab = 'products'" :class="['rounded-lg px-3 py-2 text-sm font-medium', currentTab === 'products' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600']">Productos</button>
+      <button @click="currentTab = 'categories'" :class="['rounded-lg px-3 py-2 text-sm font-medium', currentTab === 'categories' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600']">Categorías</button>
+    </div>
+
+    <div v-if="currentTab === 'products'" class="overflow-hidden rounded-xl border border-slate-200">
+      <table class="w-full text-left text-sm text-slate-600">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
+          <tr>
+            <th class="px-4 py-3">ID</th>
+            <th class="px-4 py-3">Nombre</th>
+            <th class="px-4 py-3">Precio</th>
+            <th class="px-4 py-3">Stock</th>
+            <th class="px-4 py-3">Categoría</th>
+            <th class="px-4 py-3 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="product in products" :key="product.product_id" class="border-t border-slate-200">
+            <td class="px-4 py-3 font-medium text-slate-700">{{ product.product_id }}</td>
+            <td class="px-4 py-3">{{ product.name }}</td>
+            <td class="px-4 py-3">${{ Number(product.price).toFixed(2) }}</td>
+            <td class="px-4 py-3">{{ product.stock }}</td>
+            <td class="px-4 py-3">{{ getCategoryName(product.category_id) }}</td>
+            <td class="px-4 py-3">
+              <div class="flex justify-end gap-2">
+                <button @click="openProductModal(product)" class="rounded-md border border-blue-200 bg-blue-50 px-2 py-1.5 text-xs font-medium text-blue-700">Editar</button>
+                <button @click="deleteProduct(product.product_id)" class="rounded-md border border-red-200 bg-red-50 px-2 py-1.5 text-xs font-medium text-red-700">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+          <tr v-if="!products.length">
+            <td colspan="6" class="px-4 py-10 text-center text-slate-500">No hay productos registrados.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div v-if="currentTab === 'categories'" class="overflow-hidden rounded-xl border border-slate-200">
+      <table class="w-full text-left text-sm text-slate-600">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
+          <tr>
+            <th class="px-4 py-3">ID</th>
+            <th class="px-4 py-3">Nombre</th>
+            <th class="px-4 py-3">Descripción</th>
+            <th class="px-4 py-3 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="cat in categories" :key="cat.category_id" class="border-t border-slate-200">
+            <td class="px-4 py-3 font-medium text-slate-700">{{ cat.category_id }}</td>
+            <td class="px-4 py-3">{{ cat.name }}</td>
+            <td class="px-4 py-3">{{ cat.description || 'Sin descripción' }}</td>
+            <td class="px-4 py-3">
+              <div class="flex justify-end gap-2">
+                <button @click="openCategoryModal(cat)" class="rounded-md border border-blue-200 bg-blue-50 px-2 py-1.5 text-xs font-medium text-blue-700">Editar</button>
+                <button @click="deleteCategory(cat.category_id)" class="rounded-md border border-red-200 bg-red-50 px-2 py-1.5 text-xs font-medium text-red-700">Eliminar</button>
+              </div>
+            </td>
+          </tr>
+          <tr v-if="!categories.length">
+            <td colspan="4" class="px-4 py-10 text-center text-slate-500">No hay categorías registradas.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div v-if="showProductModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+      <div class="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl">
+        <div class="mb-4 flex items-center justify-between">
+          <h3 class="text-xl font-bold text-slate-800">{{ editingProduct?.product_id ? 'Editar Producto' : 'Nuevo Producto' }}</h3>
+          <button @click="showProductModal = false" class="text-slate-500">✕</button>
+        </div>
+
+        <form @submit.prevent="saveProduct" class="space-y-4">
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700">Nombre</label>
+            <input v-model="productForm.name" required class="w-full rounded-lg border border-slate-200 px-3 py-2 outline-none focus:border-blue-500" />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700">Descripción</label>
+            <textarea v-model="productForm.description" rows="3" class="w-full rounded-lg border border-slate-200 px-3 py-2 outline-none focus:border-blue-500"></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="mb-1 block text-sm font-medium text-slate-700">Precio</label>
+              <input v-model.number="productForm.price" type="number" min="0.01" step="0.01" required class="w-full rounded-lg border border-slate-200 px-3 py-2 outline-none focus:border-blue-500" />
+            </div>
+            <div>
+              <label class="mb-1 block text-sm font-medium text-slate-700">Stock</label>
+              <input v-model.number="productForm.stock" type="number" min="0" required class="w-full rounded-lg border border-slate-200 px-3 py-2 outline-none focus:border-blue-500" />
+            </div>
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700">Categoría</label>
+            <select v-model="productForm.category_id" required class="w-full rounded-lg border border-slate-200 px-3 py-2 outline-none focus:border-blue-500">
+              <option value="">Seleccione una categoría</option>
+              <option v-for="cat in categories" :key="cat.category_id" :value="cat.category_id">{{ cat.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700">URL de imagen</label>
+            <input v-model="productForm.image_url" class="w-full rounded-lg border border-slate-200 px-3 py-2 outline-none focus:border-blue-500" />
+          </div>
+
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" @click="showProductModal = false" class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600">Cancelar</button>
+            <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div v-if="showCategoryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+      <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+        <div class="mb-4 flex items-center justify-between">
+          <h3 class="text-xl font-bold text-slate-800">{{ editingCategory?.category_id ? 'Editar Categoría' : 'Nueva Categoría' }}</h3>
+          <button @click="showCategoryModal = false" class="text-slate-500">✕</button>
+        </div>
+
+        <form @submit.prevent="saveCategory" class="space-y-4">
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700">Nombre</label>
+            <input v-model="categoryForm.name" required class="w-full rounded-lg border border-slate-200 px-3 py-2 outline-none focus:border-blue-500" />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-slate-700">Descripción</label>
+            <textarea v-model="categoryForm.description" rows="3" class="w-full rounded-lg border border-slate-200 px-3 py-2 outline-none focus:border-blue-500"></textarea>
+          </div>
+
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" @click="showCategoryModal = false" class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600">Cancelar</button>
+            <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+button {
+  transition: all 0.2s ease;
 }
 </style>
