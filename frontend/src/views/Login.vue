@@ -26,7 +26,14 @@ const handleLogin = async () => {
       email: email.value,
       password: password.value,
     });
-    router.push('/');
+
+    const roleId = authStore.user?.role_id;
+    const redirectPath =
+      roleId === 2 ? '/admin' :
+      roleId === 3 ? '/admin/orders' :
+      '/catalog';
+
+    router.push(redirectPath);
   } catch (error) {
     errorMessage.value = error.message;
   }

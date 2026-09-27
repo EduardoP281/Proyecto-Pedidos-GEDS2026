@@ -72,6 +72,20 @@ const routes = [
   },
 ];
 
+const getUserRoleRedirect = () => {
+  try {
+    const rawUser = localStorage.getItem('user');
+    const user = rawUser ? JSON.parse(rawUser) : null;
+    const roleId = user?.role_id;
+
+    if (roleId === 2) return { name: 'AdminPanel' };
+    if (roleId === 3) return { name: 'OrderMonitoring' };
+    return { name: 'Catalog' };
+  } catch (error) {
+    return { name: 'Catalog' };
+  }
+};
+
 const router = createRouter({
   history: createWebHistory(),
   routes,
@@ -81,7 +95,7 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token');
 
   if (to.path === '/' && token) {
-    return next({ name: 'Catalog' });
+    return next(getUserRoleRedirect());
   }
 
   if (to.meta.requiresAuth && !token) {
@@ -89,7 +103,7 @@ router.beforeEach((to, from, next) => {
   }
 
   if (to.meta.guestOnly && token) {
-    return next({ name: 'Catalog' });
+    return next(getUserRoleRedirect());
   }
 
   next();
