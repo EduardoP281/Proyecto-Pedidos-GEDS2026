@@ -1,7 +1,17 @@
 import axios from 'axios';
 
+const DEFAULT_API_URL = 'https://backend-development-8ce5.up.railway.app/api';
+
+const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+
+  return DEFAULT_API_URL;
+};
+
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
