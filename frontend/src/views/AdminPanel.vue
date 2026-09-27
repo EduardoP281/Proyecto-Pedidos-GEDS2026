@@ -5,6 +5,7 @@ import api from '../services/api';
 const currentTab = ref('products');
 const products = ref([]);
 const categories = ref([]);
+const orders = ref([]); 
 
 const showProductModal = ref(false);
 const editingProduct = ref(null);
@@ -20,6 +21,25 @@ const loadData = async () => {
 
   const prodRes = await api.getProducts();
   if (prodRes && prodRes.status === 200 && prodRes.data && prodRes.data.success) products.value = prodRes.data.data;
+
+  try {
+    const ordRes = await api.getAllOrders();
+    if (ordRes && ordRes.status === 200 && ordRes.data && ordRes.data.success) {
+      orders.value = ordRes.data.data;
+    }
+  } catch(e) {
+    console.error("Error al cargar órdenes:", e);
+  }
+};
+
+const changeOrderStatus = async (orderId, newStatus) => {
+  try {
+    await api.updateOrderStatus(orderId, newStatus); 
+    await loadData();
+  } catch (error) {
+    alert(error.response?.data?.error?.message || error.message || 'Error al cambiar estado');
+    await loadData(); 
+  }
 };
 
 const getCategoryName = (id) => {
@@ -110,6 +130,7 @@ onMounted(() => {
     <div class="mb-6 flex gap-2 border-b border-slate-200 pb-2">
       <button @click="currentTab = 'products'" :class="['rounded-lg px-3 py-2 text-sm font-medium', currentTab === 'products' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600']">Productos</button>
       <button @click="currentTab = 'categories'" :class="['rounded-lg px-3 py-2 text-sm font-medium', currentTab === 'categories' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600']">Categorías</button>
+      <button @click="currentTab = 'orders'" :class="['rounded-lg px-3 py-2 text-sm font-medium', currentTab === 'orders' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600']">Pedidos</button>
     </div>
 
     <div v-if="currentTab === 'products'" class="overflow-hidden rounded-xl border border-slate-200">
@@ -169,6 +190,45 @@ onMounted(() => {
           </tr>
           <tr v-if="!categories.length">
             <td colspan="4" class="px-4 py-10 text-center text-slate-500">No hay categorías registradas.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div v-if="currentTab === 'orders'" class="overflow-hidden rounded-xl border border-slate-200">
+      <table class="w-full text-left text-sm text-slate-600">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-600">
+          <tr>
+            <th class="px-4 py-3">ID Pedido</th>
+            <th class="px-4 py-3">Cliente</th>
+            <th class="px-4 py-3">Fecha</th>
+            <th class="px-4 py-3">Total</th>
+            <th class="px-4 py-3">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="order in orders" :key="order.id" class="border-t border-slate-200">
+            <td class="px-4 py-3 font-medium text-slate-700">#{{ order.id }}</td>
+            <td class="px-4 py-3">{{ order.customer_name || 'N/A' }}</td>
+            <td class="px-4 py-3">{{ new Date(order.created_at).toLocaleDateString() }}</td>
+            <td class="px-4 py-3">${{ Number(order.total).toFixed(2) }}</td>
+            <td class="px-4 py-3">
+              <select 
+                :value="order.estado" 
+                @change="changeOrderStatus(order.id, $event.target.value)"
+                class="rounded border border-slate-300 p-1 text-xs outline-none"
+              >
+                <option value="CREADO">CREADO</option>
+                <option value="PAGADO">PAGADO</option>
+                <option value="EN_PREPARACION">EN PREPARACIÓN</option>
+                <option value="EN_CAMINO">EN CAMINO</option>
+                <option value="ENTREGADO">ENTREGADO</option>
+                <option value="CANCELADO">CANCELADO</option>
+              </select>
+            </td>
+          </tr>
+          <tr v-if="!orders.length">
+            <td colspan="5" class="px-4 py-10 text-center text-slate-500">No hay pedidos registrados.</td>
           </tr>
         </tbody>
       </table>

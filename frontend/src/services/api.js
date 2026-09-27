@@ -106,5 +106,22 @@ api.deleteProduct = async (id) => {
   return res;
 };
 
+
+api.getAllOrders = async () => {
+  const res = await api.get('/orders');
+  return res;
+};
+
+api.updateOrderStatus = async (id, status) => {
+  // El backend espera { status: 'NUEVO_ESTADO' }
+  const res = await api.put(`/orders/${id}/status`, { status });
+  return res;
+};
+
+api.createOrder = async (data) => {
+  const res = await api.post('/orders', data);
+  return res;
+};
+
 export const apiMethods = api;
 export default api;

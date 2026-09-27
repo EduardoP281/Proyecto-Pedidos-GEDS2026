@@ -4,7 +4,7 @@ import { CategoryController } from '../controllers/CategoryController.js';
 import { register, login } from '../../adapters/controllers/AuthController.js';
 import { verifyToken } from '../../infrastructure/middlewares/auth.middleware.js';
 import { authorizeRoles } from '../../infrastructure/middlewares/roles.middleware.js';
-import { createOrder } from '../../adapters/controllers/OrderController.js';
+import { createOrder, getAllOrders, updateOrderStatus } from '../../adapters/controllers/OrderController.js';
 
 const router = Router();
 const productController = new ProductController();
@@ -27,6 +27,8 @@ router.post('/auth/register', (req, res) => register(req, res));
 router.post('/auth/login', (req, res) => login(req, res));
 
 // orders
-router.post('/orders', verifyToken, (req, res) => createOrder(req, res));
+router.post('/orders', verifyToken, (req, res, next) => createOrder(req, res, next));
+router.get('/orders', verifyToken, authorizeRoles('admin'), (req, res, next) => getAllOrders(req, res, next));
+router.put('/orders/:id/status', verifyToken, authorizeRoles('admin'), (req, res, next) => updateOrderStatus(req, res, next));
 
 export default router;

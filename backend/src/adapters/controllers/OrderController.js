@@ -1,5 +1,6 @@
 import { createOrderUseCase } from '../../application/usecases/orders/CreateOrder.js';
 import pool from '../../infrastructure/database/db.js';
+import Order from '../../domain/entities/Order.js';
 
 const normalizeOrderItems = (items = []) =>
   items.map((item) => ({
@@ -151,33 +152,42 @@ export const getOrderById = async (req, res, next) => {
 export const updateOrderStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { status, status_id, estado } = req.body;
-    const requestedStatus = status ?? estado ?? null;
+    const requestedStatus = req.body.status ?? req.body.estado;
 
-    let finalStatusId = status_id ?? null;
-    if (!finalStatusId && requestedStatus) {
-      const [statusRows] = await pool.execute('SELECT status_id FROM order_status WHERE name = ?', [requestedStatus]);
-      if (!statusRows.length) {
-        return res.status(400).json({ success: false, error: 'Estado inválido' });
-      }
-      finalStatusId = statusRows[0].status_id;
-    }
-
-    if (!finalStatusId) {
-      return res.status(400).json({ success: false, error: 'Debe enviar un estado válido' });
-    }
-
-    const [result] = await pool.execute(
-      'UPDATE orders SET status_id = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ?',
-      [finalStatusId, id]
+    // 1. Obtener la orden actual de la base de datos
+    const [orderRows] = await pool.execute(
+      `SELECT o.order_id, os.name AS status_name 
+       FROM orders o 
+       JOIN order_status os ON o.status_id = os.status_id 
+       WHERE o.order_id = ?`, 
+      [id]
     );
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ success: false, error: 'Pedido no encontrado' });
+    if (!orderRows.length) {
+      const err = new Error('Pedido no encontrado'); err.statusCode = 404; throw err;
     }
+
+    const currentStatus = orderRows[0].status_name;
+
+    // 2. MÁQUINA DE ESTADOS (RF-06): Validar transición usando la entidad
+    const orderEntity = new Order({ status: currentStatus });
+    orderEntity.transitionTo(requestedStatus); 
+
+    // 3. Obtener el ID del nuevo estado para la BD
+    const [statusRows] = await pool.execute('SELECT status_id FROM order_status WHERE name = ?', [requestedStatus]);
+    if (!statusRows.length) {
+      const err = new Error('Estado inválido en base de datos'); err.statusCode = 400; throw err;
+    }
+
+    // 4. Actualizar la base de datos
+    await pool.execute(
+      'UPDATE orders SET status_id = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ?',
+      [statusRows[0].status_id, id]
+    );
 
     return res.status(200).json({ success: true, message: 'Estado del pedido actualizado' });
   } catch (err) {
+    if (err.message.includes('Transición inválida')) err.isDomain = true;
     return next(err);
   }
 };
