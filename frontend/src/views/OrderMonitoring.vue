@@ -5,6 +5,7 @@ import { ordersService } from '../services/orders';
 const orders = ref([]);
 const loading = ref(false);
 
+// RF-06: Máquina de estados estricta en el frontend
 const transicionesValidas = {
   CREADO: ['PAGADO', 'CANCELADO'],
   PAGADO: ['EN_PREPARACION', 'CANCELADO'],
@@ -18,7 +19,8 @@ const cargarOrdenes = async () => {
   loading.value = true;
   try {
     const res = await ordersService.getAllOrders();
-    orders.value = res.data;
+    // CORRECCIÓN: Extraer correctamente el arreglo de datos del Envelope Pattern
+    orders.value = res.data?.data || res.data || [];
   } catch (err) {
     console.error(err);
   } finally {
@@ -31,7 +33,8 @@ const cambiarEstado = async (orderId, nuevoEstado) => {
     await ordersService.updateOrderStatus(orderId, nuevoEstado);
     await cargarOrdenes();
   } catch (err) {
-    alert(err.message || 'Error al ejecutar transición de estado');
+    // Manejo del error con Envelope Pattern
+    alert(err.response?.data?.error?.message || err.message || 'Error al ejecutar transición de estado');
   }
 };
 
@@ -40,13 +43,13 @@ onMounted(cargarOrdenes);
 
 <template>
   <div class="max-w-7xl mx-auto p-6">
-    <h1 class="text-3xl font-bold mb-6 text-gray-800">Monitoreo de Pedidos - Admin/Repartidor (RF-10)</h1>
+    <h1 class="text-3xl font-bold mb-6 text-slate-800">Monitoreo de Pedidos - Admin/Repartidor (RF-10)</h1>
 
-    <div v-if="loading" class="text-center py-8 text-gray-500">Actualizando lista de pedidos...</div>
+    <div v-if="loading" class="text-center py-8 text-slate-500">Actualizando lista de pedidos...</div>
 
-    <div v-else class="bg-white rounded-xl shadow border overflow-x-auto">
-      <table class="w-full text-left text-sm text-gray-600">
-        <thead class="bg-gray-100 text-gray-700 uppercase font-semibold text-xs border-b">
+    <div v-else class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+      <table class="w-full text-left text-sm text-slate-600">
+        <thead class="bg-slate-50 text-slate-700 uppercase font-semibold text-xs border-b border-slate-200">
           <tr>
             <th class="p-4">ID</th>
             <th class="p-4">Dirección / Teléfono</th>
@@ -55,23 +58,23 @@ onMounted(cargarOrdenes);
             <th class="p-4">Transición Siguiente (Máquina de Estados)</th>
           </tr>
         </thead>
-        <tbody class="divide-y">
-          <tr v-for="ord in orders" :key="ord.id">
-            <td class="p-4 font-bold text-gray-900">#{{ ord.id }}</td>
+        <tbody class="divide-y divide-slate-100">
+          <tr v-for="ord in orders" :key="ord.id" class="hover:bg-slate-50 transition">
+            <td class="p-4 font-bold text-slate-900">#{{ ord.id }}</td>
             <td class="p-4">
-              <p class="font-medium text-gray-800">{{ ord.direccionEntrega || 'Sin dirección' }}</p>
-              <p class="text-xs text-gray-400">Tel: {{ ord.telefonoContacto || 'N/A' }}</p>
+              <p class="font-medium text-slate-800">{{ ord.direccionEntrega || 'Sin dirección' }}</p>
+              <p class="text-xs text-slate-400">Tel: {{ ord.telefonoContacto || 'N/A' }}</p>
             </td>
-            <td class="p-4 font-bold text-gray-900">${{ Number(ord.total).toFixed(2) }}</td>
+            <td class="p-4 font-bold text-slate-900">${{ Number(ord.total).toFixed(2) }}</td>
             <td class="p-4">
-              <span class="px-2.5 py-1 rounded-full text-xs font-bold"
+              <span class="px-3 py-1.5 rounded-full text-xs font-bold border"
                 :class="{
-                  'bg-yellow-100 text-yellow-800': ord.estado === 'CREADO',
-                  'bg-blue-100 text-blue-800': ord.estado === 'PAGADO',
-                  'bg-purple-100 text-purple-800': ord.estado === 'EN_PREPARACION',
-                  'bg-indigo-100 text-indigo-800': ord.estado === 'EN_CAMINO',
-                  'bg-green-100 text-green-800': ord.estado === 'ENTREGADO',
-                  'bg-red-100 text-red-800': ord.estado === 'CANCELADO',
+                  'bg-yellow-50 text-yellow-700 border-yellow-200': ord.estado === 'CREADO',
+                  'bg-emerald-50 text-emerald-700 border-emerald-200': ord.estado === 'PAGADO',
+                  'bg-purple-50 text-purple-700 border-purple-200': ord.estado === 'EN_PREPARACION',
+                  'bg-blue-50 text-blue-700 border-blue-200': ord.estado === 'EN_CAMINO',
+                  'bg-slate-100 text-slate-600 border-slate-200': ord.estado === 'ENTREGADO',
+                  'bg-red-50 text-red-700 border-red-200': ord.estado === 'CANCELADO',
                 }">
                 {{ ord.estado }}
               </span>
@@ -82,15 +85,18 @@ onMounted(cargarOrdenes);
                   v-for="sig in transicionesValidas[ord.estado]"
                   :key="sig"
                   @click="cambiarEstado(ord.id, sig)"
-                  class="px-2.5 py-1 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded text-xs font-bold transition cursor-pointer"
+                  class="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-lg text-xs font-bold transition cursor-pointer shadow-sm"
                 >
                   &rarr; {{ sig }}
                 </button>
-                <span v-if="transicionesValidas[ord.estado]?.length === 0" class="text-xs text-gray-400 font-semibold">
-                  Estado Final
+                <span v-if="transicionesValidas[ord.estado]?.length === 0" class="text-xs text-slate-400 font-semibold">
+                  Estado Final Alcanzado
                 </span>
               </div>
             </td>
+          </tr>
+          <tr v-if="!orders.length">
+            <td colspan="5" class="p-8 text-center text-slate-500">No hay pedidos registrados en el sistema.</td>
           </tr>
         </tbody>
       </table>
