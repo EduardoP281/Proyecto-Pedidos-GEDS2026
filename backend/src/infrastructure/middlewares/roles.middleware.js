@@ -1,34 +1,29 @@
 export const authorizeRoles = (...allowedRoles) => {
     return (req, res, next) => {
         if (!req.user) {
-            console.error("authorizeRoles: req.user es indefinido.");
             return res.status(401).json({ success: false, error: { message: 'Usuario no autenticado' } });
         }
 
-        console.log("authorizeRoles: Usuario autenticado. req.user:", req.user);
+        const roleId = Number(req.user.role_id);
+        let normalizedRole = '';
 
-        // Intenta obtener el rol de todas las formas posibles
-        let userRoleText = req.user.role_name || req.user.role;
-        const roleId = Number(req.user.role_id || req.user.roleId || req.user.id_rol || req.user.rol);
-        
-        console.log(`authorizeRoles: Rol extraído. userRoleText: ${userRoleText}, roleId: ${roleId}`);
+        // Estandarizamos el rol según el ID para que coincida con las rutas
+        if (roleId === 1) normalizedRole = 'client';
+        if (roleId === 2) normalizedRole = 'admin';
+        if (roleId === 3) normalizedRole = 'repartidor';
 
-        // Traducción de roleId a texto si userRoleText no existe
-        if (!userRoleText && !isNaN(roleId)) {
-            if (roleId === 1) userRoleText = 'client';
-            if (roleId === 2) userRoleText = 'admin';
-            if (roleId === 3) userRoleText = 'delivery';
+        // Si por alguna razón no hay roleId, revisamos el texto como respaldo
+        if (!normalizedRole && req.user.role_name) {
+            const roleName = req.user.role_name.toLowerCase();
+            if (roleName === 'administrador') normalizedRole = 'admin';
+            else if (roleName === 'cliente') normalizedRole = 'client';
+            else normalizedRole = roleName;
         }
 
-        console.log(`authorizeRoles: Rol final evaluado: ${userRoleText}`);
-        console.log(`authorizeRoles: Roles permitidos para esta ruta:`, allowedRoles);
-
-        if (allowedRoles.includes(userRoleText)) {
-            console.log("authorizeRoles: Acceso permitido.");
+        if (allowedRoles.includes(normalizedRole)) {
             return next();
         }
 
-        console.warn(`authorizeRoles: Acceso denegado. Se esperaba uno de ${allowedRoles}, pero el usuario tiene ${userRoleText}`);
         return res.status(403).json({ success: false, error: { message: 'Permisos insuficientes.' } });
     };
 };
