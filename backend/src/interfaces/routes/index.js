@@ -31,4 +31,4 @@ router.post('/orders', verifyToken, (req, res, next) => createOrder(req, res, ne
 router.get('/orders', verifyToken, authorizeRoles('admin'), (req, res, next) => getAllOrders(req, res, next));
 router.put('/orders/:id/status', verifyToken, authorizeRoles('admin'), (req, res, next) => updateOrderStatus(req, res, next));
 
-export default router;
+export default router; 
