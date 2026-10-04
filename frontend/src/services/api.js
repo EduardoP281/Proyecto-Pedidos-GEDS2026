@@ -56,10 +56,11 @@ api.interceptors.response.use(
       }
     }
 
+    // Buscamos específicamente la propiedad "message" dentro del nuevo formato de error
     const message =
+      error.response?.data?.error?.message ||
       error.response?.data?.message ||
-      error.response?.data?.error ||
-      'Ocurrió un error en la solicitud.';
+      (typeof error.response?.data?.error === 'string' ? error.response.data.error : 'Ocurrió un error en la solicitud.');
 
     return Promise.reject(new Error(message));
   }
