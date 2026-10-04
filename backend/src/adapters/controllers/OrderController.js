@@ -152,11 +152,17 @@ export const getOrderById = async (req, res, next) => {
 export const updateOrderStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const requestedStatus = req.body.status ?? req.body.estado;
+    
+    // 1. Capturar el estado, quitar espacios en blanco y forzar mayúsculas
+    const rawStatus = req.body.status ?? req.body.estado;
+    if (!rawStatus) {
+      const err = new Error('No se envió el nuevo estado'); err.statusCode = 400; throw err;
+    }
+    const requestedStatus = rawStatus.trim().toUpperCase();
 
-    // 1. Obtener la orden actual de la base de datos
+    // 2. Obtener la orden actual (forzando su estado a mayúsculas para la entidad)
     const [orderRows] = await pool.execute(
-      `SELECT o.order_id, os.name AS status_name 
+      `SELECT o.order_id, UPPER(os.name) AS status_name 
        FROM orders o 
        JOIN order_status os ON o.status_id = os.status_id 
        WHERE o.order_id = ?`, 
@@ -169,25 +175,33 @@ export const updateOrderStatus = async (req, res, next) => {
 
     const currentStatus = orderRows[0].status_name;
 
-    // 2. MÁQUINA DE ESTADOS (RF-06): Validar transición usando la entidad
+    // 3. MÁQUINA DE ESTADOS (RF-06): Validar transición estrictamente
     const orderEntity = new Order({ status: currentStatus });
     orderEntity.transitionTo(requestedStatus); 
 
-    // 3. Obtener el ID del nuevo estado para la BD
-    const [statusRows] = await pool.execute('SELECT status_id FROM order_status WHERE name = ?', [requestedStatus]);
+    // 4. Obtener el ID del nuevo estado ignorando mayúsculas/minúsculas en la BD
+    const [statusRows] = await pool.execute(
+      'SELECT status_id FROM order_status WHERE UPPER(name) = ?', 
+      [requestedStatus]
+    );
+    
     if (!statusRows.length) {
-      const err = new Error('Estado inválido en base de datos'); err.statusCode = 400; throw err;
+      const err = new Error(`Estado '${requestedStatus}' no existe en la tabla order_status`); err.statusCode = 400; throw err;
     }
 
-    // 4. Actualizar la base de datos
+    // 5. Actualizar la base de datos
     await pool.execute(
       'UPDATE orders SET status_id = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ?',
       [statusRows[0].status_id, id]
     );
 
-    return res.status(200).json({ success: true, message: 'Estado del pedido actualizado' });
+    return res.status(200).json({ success: true, message: `Estado actualizado a ${requestedStatus}` });
   } catch (err) {
-    if (err.message.includes('Transición inválida')) err.isDomain = true;
+    // Clasificar el error para el Envelope Pattern (RNF-08)
+    if (err.message.includes('Transición inválida') || err.message.includes('Estado')) {
+      err.isDomain = true;
+      err.statusCode = 400;
+    }
     return next(err);
   }
 };
