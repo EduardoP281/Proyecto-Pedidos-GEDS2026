@@ -5,6 +5,7 @@ import Product from "../../../domain/entities/Product.js";
 export default class MySQLProductRepository extends ProductRepository {
 
     async findAll(categoryId = null) {
+        // Agregamos la condición base: WHERE activo = 1
         let query = `
             SELECT
                 product_id,
@@ -18,12 +19,14 @@ export default class MySQLProductRepository extends ProductRepository {
                 created_at,
                 updated_at
             FROM products
+            WHERE activo = 1
         `;
 
         const params = [];
 
         if (categoryId) {
-            query += ` WHERE category_id = ?`;
+            // Cambiamos el WHERE por AND porque ya iniciamos con un WHERE arriba
+            query += ` AND category_id = ?`;
             params.push(categoryId);
         }
 
@@ -115,8 +118,10 @@ export default class MySQLProductRepository extends ProductRepository {
     }
 
     async delete(id) {
+        // Borrado lógico: Solo apagamos el producto para no romper el historial de compras
         const [result] = await pool.execute(`
-            DELETE FROM products
+            UPDATE products
+            SET activo = 0
             WHERE product_id = ?
         `, [id]);
 

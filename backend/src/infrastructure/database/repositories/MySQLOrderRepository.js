@@ -13,7 +13,6 @@ export default class MySQLOrderRepository {
     try {
       await connection.beginTransaction();
 
-      // Ensure order_status 'CREADO' exists
       const [statusRows] = await connection.execute('SELECT status_id FROM order_status WHERE name = ?', ['CREADO']);
       let statusId;
       if (statusRows.length > 0) statusId = statusRows[0].status_id;
@@ -22,7 +21,6 @@ export default class MySQLOrderRepository {
         statusId = ins.insertId;
       }
 
-      // Check stock for each item with FOR UPDATE
       for (const it of items) {
         const [rows] = await connection.execute('SELECT stock FROM products WHERE product_id = ? FOR UPDATE', [it.product_id]);
         if (rows.length === 0) {
@@ -34,7 +32,6 @@ export default class MySQLOrderRepository {
         }
       }
 
-      // Compute subtotal (without IVA)
       let subtotal = 0.0;
       for (const it of items) {
         subtotal += Number(it.unit_price) * Number(it.quantity);
@@ -49,7 +46,6 @@ export default class MySQLOrderRepository {
 
       const orderId = orderRes.insertId;
 
-      // Insert order details and decrement stock
       for (const it of items) {
         const unitPrice = Number(it.unit_price);
         const qty = Number(it.quantity);
